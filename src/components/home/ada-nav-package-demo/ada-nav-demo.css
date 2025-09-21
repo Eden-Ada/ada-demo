@@ -46,10 +46,11 @@
   pointer-events: none;
   opacity: 0.22; /* tune based on Figma look */
   mix-blend-mode: overlay; /* overlays grain and highlights */
-  background-image: url('/glass-style.svg');
+  background-image: url('/glass-texture.png');
   background-repeat: no-repeat;
   background-position: center;
-  background-size: 100% 100%; /* stretch to pill bounds for 1:1 match */
+  background-size: 100% 100%; /* 1:1 mapping to pill bounds */
+  image-rendering: auto;
 }
 
 /* Smooth variant: no grain, slightly softer contrast and more diffuse highlights */
