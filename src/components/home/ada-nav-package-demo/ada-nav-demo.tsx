@@ -30,6 +30,8 @@ const AdaNavDemo: React.FC<AdaNavDemoProps> = ({ className = '' }) => {
               muted
               playsInline
             />
+            {/* Glass overlay - switch to `ada-nav-demo__glass ada-nav-demo__glass--smooth` for smoother texture */}
+            <div className="ada-nav-demo__glass ada-nav-demo__glass--tainted" />
           </div>
         </div>
       </div>
