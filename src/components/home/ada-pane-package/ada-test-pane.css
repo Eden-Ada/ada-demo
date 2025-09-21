@@ -1,0 +1,120 @@
+/* Ada Test Pane - Decoupled 600x600px glassmorphic rectangle
+   Extracted from home.tsx for modularity and reusability
+*/
+
+.ada-test-pane {
+  /* Fixed dimensions as per original home__rectangle */
+  width: 600px;
+  height: 600px;
+  
+  /* Layout and positioning */
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* Typography defaults */
+  color: white;
+  font-size: 1.5rem;
+  text-align: center;
+  
+  /* Note: Glass styling comes from glass-pane.css via className */
+  /* This module only handles layout, dimensions, and positioning */
+}
+
+/* Content wrapper for orb and label */
+.ada-test-pane__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  width: 100%;
+  height: 100%;
+}
+
+/* Label styling */
+.ada-test-pane__label {
+  font-size: 1.2rem;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.5px;
+}
+
+/* Orb Controls Styling */
+.ada-orb-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  margin-top: 20px;
+  width: 100%;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.control-group label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.control-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.control-buttons button {
+  padding: 10px 15px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+  font-size: 0.9rem;
+}
+
+.control-buttons button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.control-buttons button.active {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-color: white;
+  font-weight: 600;
+}
+
+.color-palette {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+}
+
+.color-swatch {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.color-swatch:hover {
+  transform: scale(1.1);
+}
+
+.color-swatch.selected {
+  border-color: white;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}

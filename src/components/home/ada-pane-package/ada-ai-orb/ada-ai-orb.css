@@ -1,0 +1,10 @@
+/* Ada AI Orb - WebGL shader-based orb using OGL
+   Exact implementation with sophisticated noise and lighting effects
+*/
+
+.orb-container {
+  position: relative;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+}

@@ -1,0 +1,54 @@
+/* Universal Glass Pane Styles (kebab-case file: glass-pane.css)
+   Centralizes a true glassmorphic effect for reuse across the app.
+   - Strong backdrop blur (15px) for a frosted-glass appearance
+   - Subtle saturation boost for vibrancy
+   - Soft border + inner/outer shadow for depth
+
+   Usage:
+   <div class="glass-pane">...</div>
+   You may override CSS variables per-container if needed.
+*/
+
+.glass-pane {
+  /* Tunable variables */
+  --glass-bg: rgba(255, 255, 255, 0.35);
+  --glass-border-color: rgba(255, 255, 255, 0.45);
+  --glass-radius: 32px; /* Requested radius */
+  --glass-saturation: 140%;
+  --glass-blur: 15px; /* Requested strong blur */
+  --glass-shadow-outer: 0 1.5px 8px rgba(0, 0, 0, 0.12);
+  /* Multiple inner shadows for depth (requested) */
+  --glass-inner-1: inset 16px 16px 9px -18px rgba(255, 255, 255, 1);
+  --glass-inner-2: inset -12px -12px 6px -14px #B3B3B3;
+  --glass-inner-3: inset 2px 2px 1px -2px #B3B3B3;
+  --glass-inner-4: inset 0 0 22px 0 rgba(242, 242, 242, 0.5);
+  --glass-foreground: #ffffff;
+
+  /* Frosted base */
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+
+  /* Shape & depth */
+  border-radius: var(--glass-radius);
+  border: 1.2px solid var(--glass-border-color);
+  box-shadow: var(--glass-shadow-outer),
+              var(--glass-inner-1),
+              var(--glass-inner-2),
+              var(--glass-inner-3),
+              var(--glass-inner-4);
+
+  /* Critical: Ensure all effects respect the border-radius */
+  overflow: hidden;
+  isolation: isolate;
+  
+  /* Sensible defaults */
+  color: var(--glass-foreground);
+  transition: background 0.18s ease, box-shadow 0.18s ease;
+  will-change: backdrop-filter, filter, background;
+}
+
+/* Optional hover refinement (kept minimal to avoid size/scale jumps) */
+.glass-pane:hover {
+  background: rgba(255, 255, 255, 0.25);
+}

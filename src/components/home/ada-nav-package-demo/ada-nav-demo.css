@@ -1,0 +1,107 @@
+/* Ada Nav Demo - Eden Navigator Component for iPad 13 Pro Landscape
+   Interactive navigation interface using iPad_Nav.svg as canvas
+*/
+
+.ada-nav-demo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  position: relative;
+}
+
+.ada-nav-demo__container {
+  position: relative;
+  /* Match the SVG viewBox exactly to avoid any letterboxing or scaling mismatches */
+  /* SVG viewBox is 831 x 281 */
+  width: 831px;
+  aspect-ratio: 831 / 281;
+  height: auto;
+  max-width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Video inside the clipping zone should fully cover the pill */
+.ada-nav-demo__video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* fill the pill without letterboxing */
+  object-position: center;
+  display: block;
+}
+
+.ada-nav-demo__canvas {
+  width: 100%;
+  height: 100%;
+  /* With container aspect-ratio matching the SVG, fill prevents any gaps */
+  object-fit: fill;
+  object-position: center;
+  user-select: none;
+  pointer-events: none; /* Allow overlay interactions */
+}
+
+.ada-nav-demo__overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: auto;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ada-nav-demo__video-clip-zone {
+  /* Match the grey pill exactly - simple positioning */
+  position: absolute;
+  
+  /* Position and size derived directly from SVG viewBox (831x281) and pill rect (x=52,y=48,w=725,h=183) */
+  top: 17.082%;      /* 48 / 281 * 100 */
+  left: 6.258%;      /* 52 / 831 * 100 */
+  width: 87.2443%;   /* 725 / 831 * 100 */
+  height: 65.125%;   /* 183 / 281 * 100 */
+  /* Elliptical border radius equivalent to 30px corners at 725x183 scale */
+  border-radius: 4.138% / 16.393%; /* 30/725 horizontally, 30/183 vertically */
+  box-sizing: border-box;
+  
+  /* Temporary visualization - remove when video is added */
+  background-color: rgba(255, 0, 0, 0.1);
+  border: 1px dashed rgba(255, 0, 0, 0.3);
+  
+  /* Ready for video content */
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Responsive adjustments - maintain proportions */
+@media (max-width: 800px) {
+  .ada-nav-demo__container {
+    width: 80%; /* maintain aspect ratio automatically */
+  }
+}
+
+@media (max-width: 640px) {
+  .ada-nav-demo__container {
+    width: 90%;
+  }
+  
+  .home__navigation {
+    padding: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ada-nav-demo__container {
+    width: 95%;
+  }
+  
+  .home__navigation {
+    padding: 10px;
+  }
+}

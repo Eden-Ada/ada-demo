@@ -1,0 +1,44 @@
+.home {
+  width: 100vw;
+  height: 100vh;
+  background-color: #F4F4F4;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+.home__content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #333;
+  padding: 2rem;
+}
+
+.home__content h1 {
+  font-size: 2.5rem;
+  font-weight: 300;
+  margin-bottom: 1rem;
+  color: #2c2c2c;
+}
+
+.home__content p {
+  font-size: 1.1rem;
+  color: #666;
+  margin: 0;
+}
+
+.home__navigation {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
