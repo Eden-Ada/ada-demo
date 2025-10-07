@@ -1,0 +1,47 @@
+.on-off-button {
+  /* Small LED dot size; tweak in parent with --status-dot-size if needed */
+  width: var(--status-dot-size, 8px);
+  height: var(--status-dot-size, 8px);
+  border-radius: 999px;
+  border: 0;
+  background: var(--vision-pill-bg);
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  margin: 0;
+  color: #fff; /* default; overridden by state modifiers below */
+  cursor: pointer;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+  overflow: visible; /* allow outer glow to render */
+}
+
+/* State modifiers: stroke uses currentColor from button */
+.on-off-button--active {
+  background: rgba(0, 200, 70, 1); color: #fff;
+  /* inner and outer glow tuned for tiny dot */
+  box-shadow:
+    inset 0 0 1px rgba(0, 200, 70, 0.8),
+    0 0 4px rgba(0, 200, 70, 0.55),
+    0 0 8px rgba(0, 200, 70, 0.4);
+}
+.on-off-button--deactive {
+  background: rgba(230, 30, 40, 1); color: #fff;
+  /* inner and outer glow tuned for tiny dot */
+  box-shadow:
+    inset 0 0 1px rgba(230, 30, 40, 0.8),
+    0 0 4px rgba(230, 30, 40, 0.55),
+    0 0 8px rgba(230, 30, 40, 0.4);
+}
+
+/* soft radial highlight to simulate emissive LED */
+.on-off-button::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.12) 45%, rgba(255,255,255,0.0) 75%);
+  pointer-events: none;
+  mix-blend-mode: screen;
+}

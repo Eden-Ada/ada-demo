@@ -1,0 +1,62 @@
+/* Tooltip animation presets (NOT applied yet). Import and add the class you want on the root .selection-tooltip at open/close time. */
+
+/* Defaults so we can toggle zoom/translate via class overrides */
+.selection-tooltip {
+  --fz-scale-start: 0.96;   /* set to 1 for no zoom */
+  --fz-translate-start: -4px; /* set to 0 for pure fade */
+}
+.selection-tooltip.no-zoom { --fz-scale-start: 1; }
+.selection-tooltip.fade-only { --fz-scale-start: 1; --fz-translate-start: 0px; }
+
+/* 1) Fade + subtle zoom (balanced, low-jank) */
+@keyframes tooltip-fade-zoom-in {
+  0% { opacity: 0; transform: translateY(var(--fz-translate-start)) scale(var(--fz-scale-start)); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes tooltip-fade-zoom-out {
+  0% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(var(--fz-translate-start)) scale(var(--fz-scale-start)); }
+}
+.selection-tooltip.anim-fade-zoom-in { animation: tooltip-fade-zoom-in 160ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.selection-tooltip.anim-fade-zoom-out { animation: tooltip-fade-zoom-out 140ms cubic-bezier(0.4, 0.0, 1, 1) both; }
+
+/* 2) Slide-down from caret anchor (precise directional feel) */
+@keyframes tooltip-slide-down-in {
+  0% { opacity: 0; transform: translateY(-10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes tooltip-slide-up-out {
+  0% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-10px); }
+}
+.selection-tooltip.anim-slide-down-in { animation: tooltip-slide-down-in 180ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.selection-tooltip.anim-slide-up-out { animation: tooltip-slide-up-out 150ms cubic-bezier(0.4, 0.0, 1, 1) both; }
+
+/* 3) Caret-pop (scale from bottom-center, matches caret anchor) */
+@keyframes tooltip-caret-pop-in {
+  0% { opacity: 0; transform-origin: center bottom; transform: translateY(-6px) scale(0.94); }
+  100% { opacity: 1; transform-origin: center bottom; transform: translateY(0) scale(1); }
+}
+@keyframes tooltip-caret-pop-out {
+  0% { opacity: 1; transform-origin: center bottom; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform-origin: center bottom; transform: translateY(-6px) scale(0.94); }
+}
+.selection-tooltip.anim-caret-pop-in { animation: tooltip-caret-pop-in 180ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.selection-tooltip.anim-caret-pop-out { animation: tooltip-caret-pop-out 140ms cubic-bezier(0.4, 0.0, 1, 1) both; }
+
+/* 4) Glass emphasis (light blur ramp + fade). Use sparingly to avoid GPU cost. */
+@keyframes tooltip-glass-in {
+  0% { opacity: 0; filter: saturate(1.0); }
+  100% { opacity: 1; filter: saturate(1.05); }
+}
+@keyframes tooltip-glass-out {
+  0% { opacity: 1; filter: saturate(1.05); }
+  100% { opacity: 0; filter: saturate(1.0); }
+}
+.selection-tooltip.anim-glass-in { animation: tooltip-glass-in 180ms ease-out both; }
+.selection-tooltip.anim-glass-out { animation: tooltip-glass-out 140ms ease-in both; }
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .selection-tooltip[class*="anim-"] { animation: none !important; }
+}

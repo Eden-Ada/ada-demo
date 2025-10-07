@@ -1,0 +1,27 @@
+.sandbox-viewport__viewport {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  cursor: grab;
+  touch-action: none;
+  overscroll-behavior: contain;
+  -webkit-user-select: none;
+  user-select: none;
+  pointer-events: auto;
+}
+.sandbox-viewport__viewport--panning { cursor: grabbing; }
+
+.sandbox-viewport__pan {
+  position: absolute;
+  left: var(--vh-pan-x, 0px);
+  top: var(--vh-pan-y, 0px);
+  will-change: transform, left, top;
+}
+
+.sandbox-viewport__scale {
+  transform: scale(var(--vh-scale, 1));
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+.sandbox-viewport__item { will-change: transform; }

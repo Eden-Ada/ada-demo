@@ -1,0 +1,22 @@
+/* Marching-dots animation for connector paths */
+
+@keyframes connector-flow-forward {
+  0%   { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -8; }
+}
+
+@keyframes connector-flow-reverse {
+  0%   { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: 8; }
+}
+
+/* Apply animation only when flow class is set */
+.connector--flow-forward path {
+  animation: connector-flow-forward 1.3s linear infinite;
+  will-change: stroke-dashoffset;
+}
+
+.connector--flow-reverse path {
+  animation: connector-flow-reverse 1.3s linear infinite;
+  will-change: stroke-dashoffset;
+}

@@ -1,3 +1,18 @@
+/* Eden wordmark (top-left) */
+.eden-mark {
+  position: fixed;
+  top: 14px;
+  left: 50px;
+  z-index: 9999;
+  font-family: 'Qwitcher Grypen', cursive;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 100px;
+  line-height: 1;
+  color: rgba(0,0,0,0.6);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
 .home {
   width: 100vw;
   height: 100vh;
@@ -8,15 +23,38 @@
   position: relative;
 }
 
-.home__content {
-  flex: 1;
+/* Space the orb and prompt block from the top */
+.orb-and-prompt {
+  margin-top: 130px;
+}
+
+/* Orb + Prompt stack: orb above prompt; margin-top computed from JS via --hero-offset */
+.orb-and-prompt {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  margin-top: var(--hero-offset, 0px);
+  gap: var(--orb-prompt-gap, 0px);
+}
+
+/* Prompt anchored to the bottom of the available area (just above the nav) */
+.home__prompt--anchored {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  /* Content height already excludes the nav; only use the desired gap */
+  bottom: var(--prompt-bottom-gap, 24px);
+}
+
+.home__content {
+  flex: 1;
+  position: relative;
+  display: block; /* simple block; hero placed via margin */
   text-align: center;
   color: #333;
-  padding: 2rem;
+  padding: 0 2rem; /* horizontal padding only */
+  box-sizing: border-box;
+  height: calc(100vh - var(--nav-height, 0px));
 }
 
 .home__content h1 {

@@ -1,3 +1,47 @@
+@font-face {
+  font-family: 'Tiempos Headline';
+  src:
+    local('Tiempos Headline Light Italic'),
+    local('TiemposHeadline-LightItalic'),
+    url('/assets/fonts/TiemposHeadline-LightItalic.otf') format('opentype');
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+
+.ada-nav-demo__speech {
+  position: absolute;
+  left: 50%;
+  /* Anchor at the pill's top (PILL.y = 48px) and lift by its own height + gap */
+  top: 48px;
+  transform: translate(-50%, calc(-100% - 24px)); /* 24px gap above pill */
+  z-index: 4; /* above nav/pill */
+}
+
+.ada-nav-demo__speech img {
+  display: block;
+  height: auto;
+  width: 420px; /* closer to mock size; adjustable */
+}
+
+.ada-nav-demo__speech-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.ada-nav-demo__speech-text p {
+  margin: 0;
+  text-align: center;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-weight: 300; /* Light */
+  font-size: 28px;
+  line-height: 1.25;
+  color: #757575;
+}
 /* Ada Nav Demo - Eden Navigator Component for iPad 13 Pro Landscape
    Interactive navigation interface using iPad_Nav.svg as canvas
 */
@@ -10,48 +54,214 @@
   position: relative;
 }
 
+/* Pill content row: label left, send button right */
+.pill-css-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-left: 18px;
+  padding-right: 12px; /* general padding; label will reserve exact space */
+  pointer-events: none; /* visual only for now */
+}
+
+.pill-label {
+  font-family: var(--font-tiempos, 'Tiempos Headline', 'Tiempos', 'Tiempos Text', Georgia, 'Times New Roman', serif);
+  font-style: italic;
+  font-weight: 300;
+  font-size: 18px;
+  line-height: 1;
+  letter-spacing: 0.2px;
+  color: rgba(255, 255, 255, 0.92);
+  white-space: nowrap;
+  text-rendering: optimizeLegibility;
+  padding-right: calc(68px + 20px); /* reserve space for send button + gap */
+}
+
+.pill-send {
+  position: absolute;
+  right: 4px;
+  top: 4px;
+  bottom: 4px;
+  width: 68px; /* estimated visual width */
+  border-radius: var(--chat-r); /* match pill curvature on all corners; clamps to height/2 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  /* glass fill */
+  -webkit-backdrop-filter: blur(25px);
+  backdrop-filter: blur(25px);
+  background: transparent;
+  isolation: isolate;
+  /* inner + drop shadows to match pill */
+  box-shadow:
+    inset 0.5px 0.5px 1px rgba(255, 255, 255, 1.0),
+    2px 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+.pill-send__icon {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+
+/* Circular glass element (top-left), copies pill styling */
+.pill-css-circle {
+  position: absolute;
+  left: var(--circle-left, 16px);
+  top: var(--circle-top, 16px);
+  width: var(--circle-d, 56px);
+  height: var(--circle-d, 56px);
+  border-radius: 999px;
+  pointer-events: none;
+  overflow: hidden;
+  /* glass fill */
+  -webkit-backdrop-filter: blur(25px);
+  backdrop-filter: blur(25px);
+  background: transparent;
+  isolation: isolate;
+  /* Figma effects match: inner + drop shadow like pill */
+  box-shadow:
+    inset 0.5px 0.5px 1px rgba(255, 255, 255, 1.0),
+    2px 2px 4px rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff; /* currentColor for the icon */
+}
+
+.pill-css-circle__icon {
+  width: var(--circle-icon, 24px);
+  height: var(--circle-icon, 24px);
+  display: block;
+}
+
+/* Figma-style inner shadows for the pill (shade-only, no stroke) */
+.pill-css-shade {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  /* Build an inner ring by masking content-box against full box */
+  --spread1: 3.5px; /* SS1 negative spread magnitude */
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  padding: var(--spread1);
+  /* SS1: White 50%, X=3, Y=3, Blur=0.5, Spread=-3.5
+     Implemented as a gradient-filled inner band with directional fade and curved ends. */
+  background:
+    /* corner emphasis — left end */
+    radial-gradient(circle at left center,
+      rgba(255,255,255,0.50) 0%,
+      rgba(255,255,255,0.30) 55%,
+      rgba(255,255,255,0.00) 100%),
+    /* corner emphasis — right end (slightly dimmer) */
+    radial-gradient(circle at right center,
+      rgba(255,255,255,0.28) 0%,
+      rgba(255,255,255,0.12) 55%,
+      rgba(255,255,255,0.00) 100%),
+    /* main left→right taper */
+    linear-gradient(90deg,
+      rgba(255,255,255,0.50) 0%,
+      rgba(255,255,255,0.40) 45%,
+      rgba(255,255,255,0.28) 70%,
+      rgba(255,255,255,0.12) 100%);
+  background-repeat: no-repeat;
+  background-size: 100% 100%, 100% 100%, 100% 100%;
+  /* Offset X=3, Y=3 */
+  background-position: 3px 3px, 3px 3px, 3px 3px;
+  /* Feather to blur=0.5 without expanding outside the ring */
+  filter: blur(0.5px);
+}
+
+/* Optional soft inner glow (SS4) — disabled by default; enable by removing display none */
+.pill-css-blur::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  display: none; /* SS4 disabled per request */
+  box-shadow: none;
+}
+
+/* Static SVG noise overlay (black on transparent) */
+.ada-nav-demo__noise {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit; /* clip perfectly to the pill */
+  pointer-events: none;
+  z-index: 30; /* above glass */
+  opacity: 0.08; /* requested alpha */
+  background-image: url('/assets/noise-pane.svg');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%; /* stretch to fill */
+  mix-blend-mode: normal; /* pure black-on-transparent dots */
+}
+
 /* Glass overlay (goes above the video, inside the clip zone) */
 .ada-nav-demo__glass {
   position: absolute;
   inset: 0;
-  border-radius: inherit; /* exactly the pill */
+  border-radius: 0; /* use unified clip-path */
   pointer-events: none;
-  z-index: 2;
-  /* True glass effect: real backdrop blur with slight tint */
-  background: rgba(255, 255, 255, 0.07);
-  -webkit-backdrop-filter: blur(22px) saturate(135%) contrast(105%);
-  backdrop-filter: blur(22px) saturate(135%) contrast(105%);
+  z-index: 20;
+  /* True glass effect: real backdrop blur only (no base white fill per request) */
+  background: transparent;
+  -webkit-backdrop-filter: blur(80px) saturate(160%) contrast(110%) brightness(108%);
+  backdrop-filter: blur(80px) saturate(160%) contrast(110%) brightness(108%);
   /* Subtle inner highlights and edge definition */
-  box-shadow:
-    inset 0 0 0 0.5px rgba(255, 255, 255, 0.38), /* inner stroke */
-    inset 0 8px 24px rgba(255, 255, 255, 0.22),   /* top glow */
-    inset 0 -10px 24px rgba(0, 0, 0, 0.16);       /* bottom depth */
+  box-shadow: none; /* remove stroke/glow to eliminate halo; we can reintroduce after alignment */
+  clip-path: var(--pill-clip);
+  will-change: clip-path, transform;
+  transform: translateZ(0);
 }
 
 /* Tainted/grain variant: subtle texture + tint layering */
 .ada-nav-demo__glass--tainted {
-  /* A soft tint that works over rainbow video while keeping glass readable */
+  /* Linear highlight (50% -> 0%) over radial tint */
   background-image:
-    radial-gradient(120% 120% at 0% 0%, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.02) 60%, rgba(255, 255, 255, 0.0) 100%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0.06) 100%);
-  background-blend-mode: screen, normal;
+    linear-gradient(180deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.0) 100%),
+    radial-gradient(
+      ellipse at 50% 50%,
+      rgba(165, 239, 255, 0.20) 0%,     /* #A5EFFF @ 0% @ 20% alpha */
+      rgba(110, 191, 244, 0.044) 77%,  /* #6EBFF4 @ 77% @ 22% of 20% */
+      rgba(70, 144, 212, 0.0) 100%     /* #4690D4 @ 100% @ 0% alpha */
+    );
+  background-blend-mode: normal;
+}
+
+/* Inner shading overlay that affects the whole pill (image + glass) */
+.ada-nav-demo__inner-shade {
+  position: absolute;
+  inset: 0; /* exact match to image and glass */
+  border-radius: 0; /* use unified clip-path */
+  pointer-events: none;
+  z-index: 40; /* above glass */
+  display: none; /* temporarily disable to verify perfect eclipse; will re-enable after alignment */
+  /* Figma inner shadows
+     A) X 1, Y 1, Blur 2, Color #000000 at 25%
+     B) X -1, Y -1, Blur 1, Color #FFFFFF at 100% */
+  /* Feather edges to eliminate jaggedness near rounded corners */
+  -webkit-mask-image: radial-gradient(closest-side, #000 98%, #0000 100%);
+  mask-image: radial-gradient(closest-side, #000 98%, #0000 100%);
+  /* Subpixel-friendly offsets and GPU hint */
+  will-change: box-shadow;
+  transform: translateZ(0);
+  box-shadow:
+    inset 0.5px 0.5px 2px rgba(0, 0, 0, 0.22),
+    inset -0.5px -0.5px 1px rgba(255, 255, 255, 0.9);
 }
 
 /* Grain texture using a tiny embedded SVG turbulence tile */
-.ada-nav-demo__glass--tainted::before {
-  content: "";
-  position: absolute;
-  inset: -1px; /* bleed to edges so corners stay filled */
-  border-radius: inherit;
-  pointer-events: none;
-  opacity: 0.22; /* tune based on Figma look */
-  mix-blend-mode: overlay; /* overlays grain and highlights */
-  background-image: url('/glass-texture.png');
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 100% 100%; /* 1:1 mapping to pill bounds */
-  image-rendering: auto;
-}
+/* removed pseudo noise overlay; handled by SpeckleNoiseOverlay component */
+
+/* removed grid overlay per request */
 
 /* Smooth variant: no grain, slightly softer contrast and more diffuse highlights */
 .ada-nav-demo__glass--smooth {
@@ -61,6 +271,7 @@
     inset 0 0 0 0.5px rgba(255, 255, 255, 0.34),
     inset 0 10px 28px rgba(255, 255, 255, 0.18),
     inset 0 -12px 26px rgba(0, 0, 0, 0.12);
+  /* parent-only clipping */
 }
 
 .ada-nav-demo__container {
@@ -74,10 +285,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  isolation: isolate; /* ensure overlays are confined to this clipping context */
 }
 
 /* Video inside the clipping zone should fully cover the pill */
 .ada-nav-demo__video {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
   width: 100%;
   height: 100%;
   min-width: 100%;
@@ -91,6 +306,28 @@
   background: transparent;
   will-change: transform;
   backface-visibility: hidden;
+  clip-path: var(--pill-clip);
+}
+
+/* Static image variant for Figma 1:1 comparisons */
+.ada-nav-demo__image {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* ensure fill */
+  object-position: center;
+  display: block;
+  transform: none; /* no overscan needed for exact PNG */
+  background: transparent;
+  border-radius: 0;
+  clip-path: var(--pill-clip);
+  will-change: clip-path, transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .ada-nav-demo__canvas {
@@ -101,6 +338,7 @@
   object-position: center;
   user-select: none;
   pointer-events: none; /* Allow overlay interactions */
+  clip-path: var(--pill-clip);
 }
 
 .ada-nav-demo__overlay {
@@ -114,39 +352,228 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  isolation: isolate; /* confine stacking/filters strictly to the pill */
 }
 
-.ada-nav-demo__video-clip-zone {
-  /* Match the grey pill exactly - simple positioning */
-  position: absolute;
-  
-  /* Position and size derived directly from SVG viewBox (831x281) and pill rect (x=52,y=48,w=725,h=183) */
-  top: 17.082%;      /* 48 / 281 * 100 */
-  left: 6.258%;      /* 52 / 831 * 100 */
-  width: 87.2443%;   /* 725 / 831 * 100 */
-  height: 65.125%;   /* 183 / 281 * 100 */
-  /* Elliptical border radius equivalent to 30px corners at 725x183 scale */
-  border-radius: 4.138% / 16.393%; /* 30/725 horizontally, 30/183 vertically */
-  box-sizing: border-box;
+/* ================= CSS-driven chat pill overlay (inside foreignObject) ================ */
+.pill-css-overlay {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* overlay only */
+}
 
+.pill-css-chat {
+  position: absolute;
+  /* Exact geometry to match Frame A sampling */
+  left: var(--chat-left);
+  top: var(--chat-top);
+  width: var(--chat-w);
+  height: var(--chat-h);
+  border-radius: var(--chat-r);
+  overflow: hidden;
+  pointer-events: none;
+  /* CSS blur fill — match Frame A sigma (25) perceptually */
+  -webkit-backdrop-filter: blur(25px);
+  backdrop-filter: blur(25px);
+  background: transparent;
+  isolation: isolate;
+  /* Compositing stability */
+  transform: translateZ(0);
+  will-change: transform, backdrop-filter;
+  backface-visibility: hidden;
+  outline: 1px solid transparent; /* ensure consistent raster rounding */
+  /* Figma effects: Inner shadow (0.5,0.5,1,0, #FFF 100%) + Drop shadow (2,2,4,0, #000 25%) */
+  box-shadow:
+    inset 0.5px 0.5px 1px rgba(255, 255, 255, 1.0),
+    2px 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+/* Inner highlight band with left→right fade. Limited to an inner ring using mask-composite. */
+.pill-css-highlight {
+  display: none; /* blur-only for now */
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  /* Thickness approximates Figma spread (−3.5px) + small softness */
+  --band: 4px;
+  /* The highlight gradient: brightest on left, fades to the right */
+  background: linear-gradient(90deg,
+    rgba(255,255,255,1) 0%,
+    rgba(255,255,255,0.45) 55%,
+    rgba(255,255,255,0.12) 100%
+  );
+  /* Create an inner-stroke band via masks (works in WebKit/Chromium) */
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  padding: var(--band);
+  /* Feather to mimic blur=0.5 without expanding outside the ring */
+  filter: blur(0.5px);
+}
+/* ===================================================================== */
+
+/* ======================== CSS-only dual-blur scaffold ======================== */
+/* Pill inside the foreignObject (725x183). Variables provided inline from TSX. */
+.ada-pill {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: var(--pill-r, 30px);
+}
+
+/* Base image: overscan by 1px and r+1px to eliminate seams */
+.ada-pill__img {
+  position: absolute;
+  left: -1px;
+  top: -1px;
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
+  border-radius: calc(var(--pill-r, 30px) + 1px);
+  background-image: url('/assets/test-wallpaper-nav.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Full-pane 40px glass overlay (stacked blur, per request) */
+.ada-pill__glass40 {
+  position: absolute;
+  left: -1px;
+  top: -1px;
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
+  border-radius: calc(var(--pill-r, 30px) + 1px);
+  pointer-events: none;
+  isolation: isolate;
+  background: transparent;
+  -webkit-backdrop-filter: blur(80px) saturate(140%) contrast(105%);
+  backdrop-filter: blur(80px) saturate(140%) contrast(105%);
+}
+
+/* Full-pane CSS blur for Frame A (no pill) */
+.ada-pill__glassFull {
+  position: absolute;
+  left: -1px;
+  top: -1px;
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
+  border-radius: calc(var(--pill-r, 30px) + 1px);
+  pointer-events: none;
+  isolation: isolate;
+  background: transparent;
+  /* Pure blur to match tone; adjust value if you prefer stronger/weaker */
+  -webkit-backdrop-filter: blur(25px);
+  backdrop-filter: blur(25px);
+}
+
+/* Common 80px strip styling */
+.ada-pill__b80 {
+  position: absolute;
+  pointer-events: none;
+  isolation: isolate;
+  background: transparent; /* optional frost can be added later */
+  -webkit-backdrop-filter: blur(80px) saturate(160%) contrast(110%) brightness(108%);
+  backdrop-filter: blur(80px) saturate(160%) contrast(110%) brightness(108%);
+}
+
+/* Top strip: from pill top to chatTop */
+.ada-pill__b80Top {
+  left: -1px;
+  top: -1px;
+  width: calc(100% + 2px);
+  height: calc(var(--chat-top) + 1px);
+  border-top-left-radius: calc(var(--pill-r, 30px) + 1px);
+  border-top-right-radius: calc(var(--pill-r, 30px) + 1px);
+}
+
+/* Bottom strip: from chatBottom to pill bottom */
+.ada-pill__b80Bottom {
+  left: -1px;
+  top: calc(var(--chat-top) + var(--chat-h));
+  width: calc(100% + 2px);
+  height: calc(100% + 1px - (var(--chat-top) + var(--chat-h)));
+  border-bottom-left-radius: calc(var(--pill-r, 30px) + 1px);
+  border-bottom-right-radius: calc(var(--pill-r, 30px) + 1px);
+}
+
+/* Left strip: alongside chat rect */
+.ada-pill__b80Left {
+  left: -1px;
+  top: calc(var(--chat-top) - 1px);
+  width: calc(var(--chat-left) + 1px);
+  height: calc(var(--chat-h) + 2px);
+  border-top-left-radius: calc(var(--pill-r, 30px) + 1px);
+  border-bottom-left-radius: calc(var(--pill-r, 30px) + 1px);
+}
+
+/* Right strip: alongside chat rect */
+.ada-pill__b80Right {
+  left: calc(var(--chat-left) + var(--chat-w));
+  top: calc(var(--chat-top) - 1px);
+  width: calc(100% + 1px - (var(--chat-left) + var(--chat-w)));
+  height: calc(var(--chat-h) + 2px);
+  border-top-right-radius: calc(var(--pill-r, 30px) + 1px);
+  border-bottom-right-radius: calc(var(--pill-r, 30px) + 1px);
+}
+
+/* =========================================================================== */
+
+.ada-nav-demo__video-clip-zone {
+  /* Exact SVG geometry: x=52, y=48, w=725, h=183, rx=30 */
+  position: absolute;
+  top: 48px;
+  left: 52px;
+  width: 725px;
+  height: 183px;
+  border-radius: 0; /* rely solely on clip-path to avoid dual rounding */
+  /* Shared clip-path so children use the exact same curve */
+  --pill-rad: 30px;
+  --pill-clip: inset(0 round var(--pill-rad));
+  --pill-clip-inset: inset(1px round calc(var(--pill-rad) - 1px));
+  clip-path: var(--pill-clip);
+  box-sizing: border-box;
+  
   /* Ready for video content */
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
+  isolation: isolate; /* confine stacking/filters strictly to the pill */
+  /* remove paint containment so backdrop-filter can sample correctly */
+  transform: translateZ(0); /* layer promotion for consistent rasterization */
+  will-change: transform, border-radius; /* subpixel stability */
 }
 
-/* Responsive adjustments - maintain proportions */
+/* Frame A inner shadows (Figma):
+   1) X -6, Y -6, Blur 15, Spread 0, Color #000000 @ 25%
+   2) X 0,  Y  4, Blur  4, Spread 0, Color #000000 @ 25% */
+.ada-nav-demo__video-clip-zone::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  /* inherit the pill shape via parent clip-path */
+  clip-path: var(--pill-clip);
+  /* stack above the video but below the pill overlay */
+  z-index: 2;
+  box-shadow:
+    inset -6px -6px 15px rgba(0, 0, 0, 0.25),
+    inset 0 4px 4px rgba(0, 0, 0, 0.25);
+}
+
+/* ensure pill overlay paints above the inner shadow */
+.pill-css-overlay { z-index: 3; }
+
 @media (max-width: 800px) {
-  .ada-nav-demo__container {
-    width: 80%; /* maintain aspect ratio automatically */
-  }
+  .ada-nav-demo__container { width: 80%; }
 }
 
 @media (max-width: 640px) {
-  .ada-nav-demo__container {
-    width: 90%;
-  }
+  .ada-nav-demo__container { width: 90%; }
   
   .home__navigation {
     padding: 15px;
@@ -154,9 +581,7 @@
 }
 
 @media (max-width: 480px) {
-  .ada-nav-demo__container {
-    width: 95%;
-  }
+  .ada-nav-demo__container { width: 95%; }
   
   .home__navigation {
     padding: 10px;

@@ -1,0 +1,13 @@
+.grid-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--grid-color), var(--grid-color)),
+    linear-gradient(90deg, var(--grid-color), var(--grid-color));
+  background-size: var(--grid-step) 1px, 1px var(--grid-step);
+  background-position: 0 0, 0 0;
+  opacity: var(--grid-opacity);
+  mix-blend-mode: screen;
+}

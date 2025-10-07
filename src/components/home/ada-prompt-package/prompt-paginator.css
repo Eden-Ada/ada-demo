@@ -1,0 +1,40 @@
+.prompt-paginator {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px; /* spacing under the prompt container */
+}
+
+.paginator-btn {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  color: rgba(0,0,0,0.45); /* light lines like spec */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px; /* large enough click target */
+  line-height: 1;
+  cursor: pointer;
+  padding: 8px; /* click target without visible background */
+}
+
+.paginator-btn.is-disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.paginator-btn:not(.is-disabled):hover {
+  transform: translateY(-1px);
+}
+
+.paginator-count {
+  /* Arrow base color is rgba(0,0,0,0.45); apply ~15% lighter for the count */
+  color: rgba(0,0,0,0.38);
+  font-size: 15px;
+  line-height: 1;
+  user-select: none;
+  min-width: 28px;
+  text-align: center;
+}

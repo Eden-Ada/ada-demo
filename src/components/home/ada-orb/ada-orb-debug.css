@@ -1,0 +1,40 @@
+.ada-orb-debug {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 9999; /* outside orb wrappers */
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+}
+
+.ada-orb-debug__toggle {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(0,0,0,0.1);
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  cursor: pointer;
+}
+
+.ada-orb-debug__panel {
+  margin-top: 8px;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(8px);
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.16);
+  border: 1px solid rgba(0,0,0,0.08);
+}
+
+.ada-orb-debug__row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.ada-orb-debug__row button {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(0,0,0,0.1);
+  background: #fff;
+  cursor: pointer;
+}

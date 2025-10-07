@@ -1,0 +1,9 @@
+.fade-seed { opacity: 0; transform: translateY(8px); transition: opacity 600ms ease, transform 600ms ease; }
+.fade-seed.is-visible { opacity: 1; transform: translateY(0); }
+
+/* Preserve absolute-centering transform for the Rive overlay */
+.ada-orb__rive-wrap.fade-seed { transform: translate(-50%, -50%); }
+.ada-orb__rive-wrap.fade-seed.is-visible { transform: translate(-50%, -50%); }
+
+/* ensure orb/prompt containers can fade */
+.home__orb, .home__prompt, .eden-mark { will-change: opacity, transform; }

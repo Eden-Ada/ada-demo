@@ -1,0 +1,40 @@
+.ada-prompt {
+  position: relative;
+  width: var(--speech-width, 480px);
+  height: auto;
+  display: inline-block;
+}
+
+.ada-prompt__bubble {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.ada-prompt__text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* allow scroll interactions inside */
+  pointer-events: auto;
+  /* inner margins inside the bubble */
+  padding: 15px;
+  box-sizing: border-box;
+}
+
+.ada-prompt__text p {
+  margin: 0;
+  text-align: center;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-weight: 300;
+  font-size: 28px;
+  line-height: 1.25;
+  color: #757575;
+  /* enable scroll when content is too tall */
+  max-height: 100%;
+  overflow-y: auto;
+  /* smooth scrolling feel for long content */
+  scrollbar-width: thin;
+}

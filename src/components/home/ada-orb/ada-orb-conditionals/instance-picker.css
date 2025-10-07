@@ -1,0 +1,183 @@
+.instance-picker {
+  position: relative;
+  width: 100%; /* fill the clipped circle overlay */
+  height: 100%;
+  pointer-events: auto;
+  color: rgba(0,0,0,0.75);
+}
+
+.ip-item {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  will-change: transform; /* keep this animated layer promoted */
+}
+
+.ip-group {
+  position: relative;
+  width: auto;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* Centered icon overlay inside the 200px circle; absolute so it never changes layout */
+.ip-icon-center {
+  width: 96px; /* visual size only; tweak as desired */
+  height: 96px;
+  color: #fff; /* used by stroke="currentColor" */
+  pointer-events: none;
+}
+
+/* 30% larger variant for Project instance only (96px * 1.3 ≈ 125px) */
+.ip-icon-center--lg {
+  width: 125px;
+  height: 125px;
+}
+
+.ip-glass-225 {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 225px;
+  height: 225px;
+  border-radius: 50%;
+  pointer-events: none;
+  -webkit-backdrop-filter: blur(60px) saturate(1);
+  backdrop-filter: blur(60px) saturate(1);
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow:
+    inset 1px 1px 2px rgba(255, 255, 255, 0.85),
+    inset -3px -3px 8px rgba(0, 0, 0, 0.10),
+    0 8px 24px rgba(0, 0, 0, 0.14),
+    0 16px 40px rgba(0, 0, 0, 0.18);
+}
+
+.ip-glass-200 {
+  position: relative;
+  width: 200px;
+  height: auto;
+  aspect-ratio: 1 / 1; /* keep perfectly circular regardless of flex/parent */
+  border-radius: 50%;
+  pointer-events: none;
+  display: grid;           /* center children precisely */
+  place-items: center;
+  -webkit-backdrop-filter: blur(28px) saturate(1);
+  backdrop-filter: blur(28px) saturate(1);
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow:
+    inset 1px 1px 2px rgba(255, 255, 255, 0.85),
+    inset -3px -3px 8px rgba(0, 0, 0, 0.10),
+    0 8px 24px rgba(0, 0, 0, 0.14),
+    0 16px 40px rgba(0, 0, 0, 0.18);
+  flex: 0 0 auto; /* prevent flexbox shrinking */
+  will-change: transform, backdrop-filter; /* hint to keep blur composited during motion */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0); /* promote to its own compositor layer */
+}
+
+.ip-glass {
+  width: 165px;
+  height: 165px;
+  border-radius: 50%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* glassmorphism */
+  background: radial-gradient(120px 120px at 40% 30%, rgba(255,255,255,0.35), rgba(255,255,255,0.10));
+  -webkit-backdrop-filter: blur(12px) saturate(1.2);
+  backdrop-filter: blur(12px) saturate(1.2);
+  box-shadow:
+    inset 1px 1px 2px rgba(255, 255, 255, 0.85),
+    inset -3px -3px 8px rgba(0, 0, 0, 0.10),
+    0 8px 24px rgba(0, 0, 0, 0.16);
+}
+
+.ip-icon {
+  width: 56px;
+  height: 56px;
+  opacity: 0.9;
+}
+
+.ip-label {
+  position: relative;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-weight: 480;
+  font-size: 18px;
+  line-height: 1.1;
+  color: #ffffff;
+  text-align: center;
+  letter-spacing: 0.06em;
+  flex: 0 0 auto;
+}
+
+/* Slide animations (cover-flow style) */
+@keyframes ipInFromRight {
+  from { transform: translate(-50%, -50%) translateX(140%); }
+  to   { transform: translate(-50%, -50%) translateX(0%); }
+}
+@keyframes ipOutToLeft {
+  from { transform: translate(-50%, -50%) translateX(0%); }
+  to   { transform: translate(-50%, -50%) translateX(-140%); }
+}
+@keyframes ipInFromLeft {
+  from { transform: translate(-50%, -50%) translateX(-140%); }
+  to   { transform: translate(-50%, -50%) translateX(0%); }
+}
+@keyframes ipOutToRight {
+  from { transform: translate(-50%, -50%) translateX(0%); }
+  to   { transform: translate(-50%, -50%) translateX(140%); }
+}
+
+.ip-center { transform: translate(-50%, -50%) translateX(0%); }
+.ip-in-right { animation: ipInFromRight 320ms ease both; }
+.ip-out-left { animation: ipOutToLeft 320ms ease both; }
+.ip-in-left { animation: ipInFromLeft 320ms ease both; }
+.ip-out-right { animation: ipOutToRight 320ms ease both; }
+
+.ip-chevron {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.95);
+  cursor: pointer;
+  line-height: 0;
+  z-index: 8;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.ip-chevron:hover { opacity: 0.9; }
+.ip-chevron--left { left: -68px; }
+.ip-chevron--right { right: -68px; }
+
+.ip-chevron:focus, .ip-chevron:focus-visible, .ip-chevron:active {
+  outline: none;
+  box-shadow: none;
+}
+
+/* Remove Firefox inner focus border */
+.ip-chevron::-moz-focus-inner { border: 0; }
+
+/* Pulse on click */
+@keyframes ipChevronPulse {
+  0% { transform: translateY(-50%) scale(1); }
+  45% { transform: translateY(-50%) scale(1.12); }
+  100% { transform: translateY(-50%) scale(1); }
+}
+.ip-chevron.pulse {
+  animation: ipChevronPulse 300ms ease-out;
+}

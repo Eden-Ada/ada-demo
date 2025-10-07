@@ -1,0 +1,211 @@
+.ada-orb {
+  position: relative;
+  width: 480px;   /* match SVG intrinsic size; can be overridden by parent */
+  aspect-ratio: 1 / 1; /* keep square */
+  height: auto;
+  /* Circle geometry (percentages relative to 480x480) */
+  --cx: 49.9%;
+  --cy: 49.9%;
+  --r: 39.0625%;
+  /* Size of the embedded Rive orb area relative to the inner circle box */
+  --rive-size: 62%;
+  /* Glass tuning over the Rive area */
+  --rive-glass-saturation: 1; /* keep baseline unless user tweaks */
+}
+
+/* Centered triangle overlay inside the glass circle, above the pane, below Rive */
+.ada-orb__triangle {
+  position: absolute;
+  width: 225px;
+  height: 225px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 3; /* above .ada-orb__glass-pane (2), below rive overlay */
+  pointer-events: none;
+}
+
+/* Hide video temporarily so the Rive orb is unmistakably visible */
+.ada-orb__video--dim { opacity: 0; }
+
+.ada-orb__svg {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: auto;
+}
+
+/* Clip wrapper to confine both video and glass to the exact inner circle */
+.ada-orb__clip {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  clip-path: circle(var(--r) at var(--cx) var(--cy));
+  -webkit-clip-path: circle(var(--r) at var(--cx) var(--cy));
+}
+
+/* Precisely aligned circular overlay that clips its children via border-radius */
+.ada-orb__circle {
+  position: absolute;
+  /* width = 2 * radius; radius is 39.0625% of 480 */
+  width: 78.125%;
+  height: 78.125%;
+  /* place center at cx,cy => left/top = center - radius */
+  left: 10.833333%;
+  top: 10.833333%;
+  border-radius: 50%;
+  overflow: hidden; /* clip children smoothly */
+  z-index: 1; /* above base svg */
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  will-change: transform;
+  outline: 1px solid transparent; /* stabilize raster rounding */
+}
+
+/* Overlay container INSIDE the clipped circle. Anything rendered here is strictly masked
+   by the same circular geometry as the video. Place the switcher/animations here. */
+.ada-orb__circle-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  z-index: 6; /* above video and glass underlay */
+  pointer-events: auto; /* allow interactions (chevrons, etc.) */
+}
+
+/* Clip the video to the inner grey circle of the SVG
+   SVG viewBox: 480x480
+   Inner circle: cx=239.5, cy=239.5, r=187.5
+   Percent equivalents relative to 480: r=39.0625%, cx≈49.9%, cy≈49.9%
+*/
+.ada-orb__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* fill the circle interior */
+  z-index: 1;
+  pointer-events: none;
+  /* slight overscan to avoid subpixel gaps along the circular edge */
+  transform: scale(1.01);
+  transform-origin: center;
+}
+
+/* Glassmorphic overlay clipped to the same circle */
+.ada-orb__glass {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: transparent;
+  /* baseline glass: blur only, no saturation change */
+  -webkit-backdrop-filter: blur(20px) saturate(1);
+  backdrop-filter: blur(20px) saturate(1);
+}
+
+/* foreignObject content box */
+.ada-orb__fo {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.ada-orb__rive {
+  position: absolute;
+  /* center inside the inner circle */
+  width: var(--rive-size);
+  height: var(--rive-size);
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 6; /* above video */
+}
+
+/* Make the embedded Rive canvas fill the circle (override fixed 320px) */
+.ada-orb__rive .ada-orb-thin-container { width: 100% !important; height: 100% !important; }
+.ada-orb__rive .ada-orb-thin { width: 100% !important; height: 100% !important; }
+
+/* True glass blur UNDER the Rive orb (restores glassmorphism) */
+.ada-orb__glass-pane, .ada-orb__glass-under-rive {
+  position: absolute;
+  width: var(--orb-glass-size, 225px);
+  height: var(--orb-glass-size, 225px);
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%; /* circular pane */
+  pointer-events: none;
+  z-index: 2; /* under any overlays inside the circle */
+  -webkit-backdrop-filter: blur(60px) saturate(var(--rive-glass-saturation, 1));
+  backdrop-filter: blur(60px) saturate(var(--rive-glass-saturation, 1));
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* Allow making the glass interactive when certain modes need it */
+.ada-orb.ada-orb--glass-interactive .ada-orb__glass-pane {
+  pointer-events: auto;
+}
+
+/* Add the rim effect directly onto the blurred glass pane */
+.ada-orb__glass-pane {
+  box-shadow:
+    inset 1px 1px 2px rgba(255, 255, 255, 0.85),
+    inset -3px -3px 8px rgba(0, 0, 0, 0.10),
+    /* outer drop shadows for hover/float effect */
+    0 8px 24px rgba(0, 0, 0, 0.14),
+    0 16px 40px rgba(0, 0, 0, 0.18);
+}
+
+/* Glass overlay limited to the Rive orb area only */
+.ada-orb__glass-over-rive {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 7; /* ABOVE Rive so it appears inside a glass pane */
+  /* When glass is above the WebGL canvas, avoid backdrop-filter to prevent suppression.
+     Use a soft rim-only shadow for the glass effect. */
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  /* Soft inner/outer glow to emphasize the glass rim without tinting */
+  box-shadow:
+    inset 1px 1px 2px rgba(255, 255, 255, 0.85),
+    inset -3px -3px 8px rgba(0, 0, 0, 0.10),
+    0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* Rive overlay positioned above the circle */
+.ada-orb__rive-wrap {
+  position: absolute;
+  width: 225px;
+  height: 225px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 6; /* above video and glass pane blur, below rim */
+}
+.ada-orb__rive-wrap .ada-orb-thin-container { width: 100% !important; height: 100% !important; }
+.ada-orb__rive-wrap .ada-orb-thin { width: 100% !important; height: 100% !important; }
+
+/* Inner shading overlay to mimic the pill inner shadows but circular */
+.ada-orb__inner-shade {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  /* Build a circular ring using mask to affect only the edge inside the circle */
+  -webkit-mask-image: radial-gradient(circle at var(--cx) var(--cy), #000 70%, #0000 72%);
+  mask-image: radial-gradient(circle at var(--cx) var(--cy), #000 70%, #0000 72%);
+  /* Soft inner highlights and shadows for depth */
+  box-shadow:
+    inset 0.5px 0.5px 2px rgba(255, 255, 255, 0.85),
+    inset -1px -1px 4px rgba(0, 0, 0, 0.18);
+}
