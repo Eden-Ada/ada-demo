@@ -1,0 +1,68 @@
+.task-stack {
+  position: relative;
+  width: max-content;
+  height: max-content;
+  pointer-events: none; /* visual only under the block */
+}
+
+.task-stack__layer {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+/* Visual 'paper' card used to fake stacked items */
+.stack-card {
+  width: var(--stack-width, 245px);
+  height: var(--stack-height, 180px);
+  border-radius: var(--stack-radius, 30px);
+  background: transparent; /* no fill so the Block's frost doesn't sample extra luminance */
+  /* remove backdrop filters to avoid contributing brightness into the blur */
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  /* edges-only: low-alpha border + subtle outer shadows for depth */
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow:
+    0 10px 24px rgba(0,0,0,var(--shadow-a, 0.12)),
+    0 3px 10px rgba(0,0,0,var(--shadow-b, 0.08));
+  /* use normal blend for shadows; border alpha is already low */
+  opacity: 0.9;
+  transform: translate(var(--stack-bias-x, 0px), var(--stack-bias-y, 0px));
+}
+
+/* Override base for filled variants so they are NOT transparent. Place after base for cascade win. */
+.stack-card.stack-card--filled {
+  /* Style 2 must share base (transparent edges) — do not introduce fill/blur */
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  /* shadows driven by --shadow-a/--shadow-b from TS; border inherits base */
+}
+
+.stack-card.stack-card--filled-strong {
+  /* Style 3: the ONLY variant with fill + blur */
+  background: rgba(255, 255, 255, 0.06);
+  -webkit-backdrop-filter: blur(16px) saturate(1);
+  backdrop-filter: blur(16px) saturate(1);
+  border: 1px solid rgba(255,255,255,0.14);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.35),
+    0 10px 24px rgba(0,0,0,0.18),
+    0 3px 10px rgba(0,0,0,0.14);
+}
+
+/* Style 3 (edge-accent mode): strong visible edges using outside-only outline, no fill/blur */
+.stack-card.stack-card--edge-accent {
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border: none;
+  outline: var(--edge-outline, 1.6px) solid rgba(255,255,255,0.28);
+  outline-offset: var(--edge-offset, 8px);
+  /* Drop-shadows based on the outline shape (outside of the block rect) */
+  filter:
+    drop-shadow(0 8px 18px rgba(0,0,0,0.18))
+    drop-shadow(0 3px 8px rgba(0,0,0,0.12));
+  box-shadow: none;
+}

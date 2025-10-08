@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useState } from 'react'
-import TaskItem from './task-item'
+import TaskItem from './task-chip'
 import { SandboxViewport, ZoomSlider, GridOverlay, TestBadge, sliderValueToScale } from '../../sandbox-env'
 import '../../vision-primitive/vision-harness.css'
 

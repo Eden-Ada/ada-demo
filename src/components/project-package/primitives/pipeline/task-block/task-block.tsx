@@ -1,15 +1,19 @@
 import React, { useMemo } from 'react'
-import './task-block.css'
-import TaskItem from '../task-item/task-item'
+import './styles/task-block.css'
+import './styles/tb-animations.css'
+import ProgMeter from './prog-meter/prog-meter'
 import { renderDescriptorText } from './utils/descriptor-text-render'
 
 export type TaskBlockProps = {
   descriptor?: string
+  percent?: number
+  variant?: 1 | 2
+  alpha?: number
 }
 
 const BASE_WIDTH = 245
 
-const TaskBlock: React.FC<TaskBlockProps> = ({ descriptor = 'DEFAULT' }) => {
+const TaskBlock: React.FC<TaskBlockProps> = ({ descriptor = 'DEFAULT', percent = 0, variant = 1, alpha = 0.7 }) => {
   const fit = useMemo(() => {
     return renderDescriptorText({
       text: descriptor,
@@ -18,16 +22,21 @@ const TaskBlock: React.FC<TaskBlockProps> = ({ descriptor = 'DEFAULT' }) => {
   }, [descriptor])
 
   const rows = fit.rows
+  const completed = percent >= 100
 
   return (
-    <div className="task-block" aria-label="Task block" style={{ width: BASE_WIDTH }}>
-      <TaskItem state="default" iconStrokeWidth={0.8} iconAlpha={0.5} />
+    <div
+      className={`task-block${completed ? ' is-complete' : ''}`}
+      aria-label="Task block"
+      style={{ width: BASE_WIDTH, ['--tb-text-alpha' as any]: String(completed ? 0.5 : 1) }}
+    >
+      <ProgMeter percent={percent} filmOpacity={0.7} variant={variant} alpha={alpha} outerGap={10} />
       <div className="task-block__name">
         {rows.map((r, i) => (
           <div key={i}>{r}</div>
         ))}
       </div>
-      <div className="task-block__pill" role="button" aria-label="Type: Task Item">Task Item</div>
+      <div className="task-block__pill" role="button" aria-label="Type: Task Block">Task Block</div>
     </div>
   )
 }

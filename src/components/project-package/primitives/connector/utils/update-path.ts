@@ -39,7 +39,13 @@ function computeNearestAnchors(stage: DOMRect, a: DOMRect, b: DOMRect): PathPoin
 // by returning the firstElementChild's bounding box; falls back to wrapper.
 function getEffectiveRect(wrap: HTMLElement): DOMRect {
   const inner = wrap.firstElementChild as HTMLElement | null
-  return (inner || wrap).getBoundingClientRect()
+  if (inner) {
+    const t = getComputedStyle(inner).transform
+    if (t && t !== 'none') {
+      return inner.getBoundingClientRect()
+    }
+  }
+  return wrap.getBoundingClientRect()
 }
 
 // Start an animation loop that watches node positions (including CSS transforms)

@@ -1,0 +1,64 @@
+/* Base wrapper */
+.label-post {
+  position: relative;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  color: #ffffff;
+  font-family: 'Helvetica Neue', Helvetica, Arial, system-ui, -apple-system, sans-serif;
+  font-weight: 320;
+  letter-spacing: 0.2px;
+  line-height: 1;
+  user-select: none;
+}
+
+/* Block variant: rounded rectangle with Eden glass + rim */
+.label-post--block {
+  padding: 15px; /* 15px on all sides */
+  border-radius: 16px;
+  -webkit-backdrop-filter: blur(28px) saturate(1);
+  backdrop-filter: blur(28px) saturate(1);
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow:
+    inset 1px 1px 2px rgba(255, 255, 255, 0.85),
+    inset -3px -3px 8px rgba(0, 0, 0, 0.10),
+    0 8px 24px rgba(0, 0, 0, 0.14),
+    0 16px 40px rgba(0, 0, 0, 0.18);
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.label-post--block::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(rgba(255,255,255,0.05), rgba(255,255,255,0.05));
+  pointer-events: none;
+}
+
+/* Inner text wrappers */
+.label-post__lines { text-align: center; }
+.label-post__line { white-space: pre-wrap; }
+
+/* Sizes (font size only; padding controlled by block variant) */
+.label-post--sm { font-size: 12px; }
+.label-post--md { font-size: 14px; }
+.label-post--lg { font-size: 16px; }
+
+/* Tones (block variant keeps glass; tone adjusts subtle tint via overlay) */
+.label-post--tone-default { color: #fff; }
+.label-post--tone-soft    { color: #fff; }
+.label-post--tone-strong  { color: #fff; }
+.label-post--tone-info    { color: #fff; }
+.label-post--tone-success { color: #fff; }
+.label-post--tone-warning { color: #1a1200; }
+
+/* Optional: small pill variant if we ever reuse as inline badge */
+.label-post--sm { font-size: 12px; }
+.label-post--md { font-size: 14px; }
+.label-post--lg { font-size: 16px; }
+
+/* Optional icon slot if needed later */
+.label-post__icon { display: inline-flex; width: 14px; height: 14px; }
+.label-post__text { display: inline-block; }

@@ -1,5 +1,5 @@
 import React from 'react'
-import { buildBottomArcPath } from '../../task-item/utils/circular-text'
+import { buildBottomArcPath } from '../../task-chip/utils/circular-text'
 
 export type CurvedStateLabelProps = {
   circleRef: React.RefObject<HTMLElement | null>

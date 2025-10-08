@@ -1,6 +1,6 @@
 import React, { useEffect, useId, useRef, useState } from 'react'
 import { buildBottomArcPath } from './utils/circular-text'
-import './task-item.css'
+import './task-chip.css'
 import SelectionTooltip from '../selection-tooltip/selection-tooltip'
 
 type TaskItemState = 'default' | 'automation' | 'manual' | 'outsource'

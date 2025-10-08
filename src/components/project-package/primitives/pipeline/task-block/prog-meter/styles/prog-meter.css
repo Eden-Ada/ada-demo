@@ -1,0 +1,68 @@
+.prog-meter {
+  position: relative;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  -webkit-backdrop-filter: blur(28px) saturate(1);
+  backdrop-filter: blur(28px) saturate(1);
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow:
+    inset 1px 1px 2px rgba(255, 255, 255, 0.85),
+    inset -3px -3px 8px rgba(0, 0, 0, 0.10),
+    0 8px 24px rgba(0, 0, 0, 0.14),
+    0 16px 40px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.prog-meter::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(rgba(255,255,255,0.05), rgba(255,255,255,0.05));
+  pointer-events: none;
+  z-index: 1;
+  opacity: var(--film-opacity, 1);
+}
+
+.prog-meter__svg {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.prog-meter__track,
+.prog-meter__progress {
+  vector-effect: non-scaling-stroke;
+  stroke-linecap: round;
+}
+
+.prog-meter__progress {
+  /* Start from 12 o'clock */
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  transform: rotate(-90deg);
+}
+
+/* animation rules moved to prog-animations.css */
+
+.prog-meter__value {
+  position: relative;
+  z-index: 3;
+  color: #fff;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  font-size: 18px;
+}
+
+.prog-meter__check {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+}
+/* animation rules moved to prog-animations.css */

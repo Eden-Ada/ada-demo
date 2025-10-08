@@ -1,0 +1,59 @@
+.task-item-card {
+  position: relative;
+  width: 245px;
+  height: auto;
+  border-radius: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 26px 20px;
+  box-sizing: border-box;
+  gap: 10px;
+  -webkit-backdrop-filter: blur(28px) saturate(1);
+  backdrop-filter: blur(28px) saturate(1);
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow:
+    inset 1px 1px 2px rgba(255, 255, 255, 0.85),
+    inset -3px -3px 8px rgba(0, 0, 0, 0.10),
+    0 8px 24px rgba(0, 0, 0, 0.14),
+    0 16px 40px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.task-item-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(rgba(255,255,255,0.05), rgba(255,255,255,0.05));
+  pointer-events: none;
+}
+
+.task-item-card__name {
+  margin: 0;
+  text-align: center;
+  color: #FFFFFF;
+  font-family: 'Helvetica Neue', Helvetica, Arial, system-ui, -apple-system, sans-serif;
+  font-weight: 350;
+  font-size: 20px;
+  letter-spacing: 0.2px;
+}
+
+.task-item-card__pill {
+  margin: 0 auto;
+  padding: 7px 16px;
+  border-radius: 14px;
+  color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.14);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none;
+  font-family: 'Helvetica Neue', Helvetica, Arial, system-ui, -apple-system, sans-serif;
+  font-weight: 310;
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: 1.4px;
+  width: max-content;
+}

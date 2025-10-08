@@ -1,0 +1,12 @@
+/* Task Block text animations */
+
+.task-block__name,
+.task-block__pill {
+  transition: opacity 260ms ease;
+}
+
+/* On completion, fade text to the provided alpha (defaults to 0.5 if not set) */
+.task-block.is-complete .task-block__name,
+.task-block.is-complete .task-block__pill {
+  opacity: var(--tb-text-alpha, 0.5);
+}

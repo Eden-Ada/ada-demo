@@ -12,14 +12,19 @@ export function twoKnotPath(
   const tx = to.x, ty = to.y
   const dx = tx - sx, dy = ty - sy
   const adx = Math.abs(dx)
+  const ady = Math.abs(dy)
   const sdx = dx === 0 ? 1 : Math.sign(dx)
   const sdy = dy === 0 ? 1 : Math.sign(dy)
   const orientation = opts.orientation ?? (Math.abs(dx) >= Math.abs(dy) ? 'horizontal' : 'vertical')
   const desiredR = Math.max(2, opts.radius ?? 18)
-  const alignedEps = opts.alignedEps ?? 4
+  const alignedEps = opts.alignedEps ?? 12
 
   if (orientation === 'horizontal') {
-    // Vertical trunk at midX. Always produce two knots (even if dy≈0).
+    // If vertical separation is negligible, draw a straight horizontal line to avoid degenerate knots.
+    if (ady <= alignedEps) {
+      return `M ${sx} ${sy} L ${tx} ${ty}`
+    }
+    // Vertical trunk at midX. Always produce two knots when there is vertical separation.
     const midX = sx + dx / 2
     const r = Math.max(4, Math.min(desiredR, Math.abs(midX - sx), Math.abs(tx - midX)))
     const p1a = { x: midX - sdx * r, y: sy }
