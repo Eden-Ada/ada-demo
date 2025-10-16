@@ -1,0 +1,110 @@
+.task-item {
+  width: 132px;
+  height: 132px;
+  margin: 0 auto;
+  border-radius: 999px;
+  position: relative;
+  display: grid;
+  place-items: center;
+  -webkit-backdrop-filter: blur(28px) saturate(1);
+  backdrop-filter: blur(28px) saturate(1);
+  background: rgba(255, 255, 255, var(--glass-bg-alpha, 0.04));
+  box-shadow:
+    inset 1px 1px 2px rgba(255, 255, 255, 0.85),
+    inset -3px -3px 8px rgba(0, 0, 0, 0.10),
+    0 8px 24px rgba(0, 0, 0, 0.14),
+    0 16px 40px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.task-item::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(rgba(255,255,255,0.05), rgba(255,255,255,0.05));
+  pointer-events: none;
+  z-index: 1; /* film sits below icon/text */
+  opacity: var(--film-opacity, 1);
+}
+
+/* Centered icon above the film */
+.task-item__icon {
+  display: block;
+  z-index: 2;
+}
+
+/* Curved bottom text inside circle */
+.task-item__text-svg {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.task-item__text {
+  fill: #FFFFFF;
+  font-size: 11px;
+  line-height: 1;
+  /* Stronger, crisper stack to match Figma-style curved labels */
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 600;
+  letter-spacing: 1.6px;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Fade wrapper for state visuals (icon + label) to reveal briefly on tap */
+.task-item__state-visuals {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 2;
+  opacity: 1;
+  transition: opacity 260ms ease;
+  pointer-events: none; /* visuals shouldn't intercept taps */
+}
+
+.task-item__state-visuals[data-visible="0"] {
+  opacity: 0;
+}
+
+/* Long-press reset overlay */
+.task-item__reset-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 4;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 220ms ease;
+}
+
+.task-item__reset-overlay[data-visible="1"] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.task-item__reset-btn {
+  appearance: none;
+  border: none;
+  background: none; /* no fill or rounded rect */
+  color: #fff;
+  border-radius: 0;
+  width: auto;
+  height: auto;
+  display: inline-grid;
+  place-items: center;
+  box-shadow: none; /* remove any inner/outer shadow */
+  cursor: pointer;
+  transition: transform 120ms ease;
+}
+
+.task-item__reset-btn:hover,
+.task-item__reset-btn:focus-visible {
+  transform: scale(1.08);
+  outline: none;
+}

@@ -1,0 +1,46 @@
+.three-way-bar.is-visible { opacity: 1; pointer-events: auto; }
+.three-way-bar {
+  position: absolute;
+  /* Center within the shell's padding gutters so spacing matches top and right */
+  top: calc(var(--shell-pad-v, 88px) / 2 - var(--twb-size-default, 32px) / 2);
+  right: calc(var(--shell-pad-h, 96px) / 2 - var(--twb-size-default, 32px) / 2);
+  padding: 0; /* no internal padding so top/bottom margins are symmetric */
+  display: inline-block;
+  pointer-events: none; /* non-interactive per spec */
+  opacity: 0; /* hidden by default */
+  transition: opacity 180ms ease;
+}
+
+/* Glassmorphic wrapper (Eden signature) */
+.three-way-bar__chrome { padding: 0; background: transparent; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; border-radius: 0; }
+
+.three-way-bar__dots {
+  display: inline-flex;
+  gap: var(--twb-gap, 6px);
+  align-items: center;
+  justify-content: center;
+}
+
+.three-way-bar .three-way-bar__dots > span {
+  width: var(--twb-size-default, 27px);
+  height: var(--twb-size-default, 27px);
+  border-radius: 999px;
+  background: transparent; /* transparent fill per spec */
+  border: 1px solid rgba(255, 255, 255, 0.95); /* white ring */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: width 180ms ease, height 180ms ease, transform 180ms ease, opacity 180ms ease;
+}
+
+/* Size and color for icons inside dots */
+.three-way-bar .three-way-bar__dots > span > svg {
+  width: 68%;
+  height: 68%;
+  display: block;
+  color: #FFFFFF; /* white stroke */
+  stroke-width: 1.25;
+}
+

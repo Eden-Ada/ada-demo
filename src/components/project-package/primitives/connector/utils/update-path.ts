@@ -6,7 +6,7 @@ export type PathPoints = { orientation: 'horizontal' | 'vertical'; from: Point; 
 // Decide anchor sides based on dominant separation axis between node centers.
 // - If |dx| >= |dy|: use horizontal connection: right of leftmost -> left of rightmost
 // - Else: use vertical connection: bottom of topmost -> top of bottommost
-function computeNearestAnchors(stage: DOMRect, a: DOMRect, b: DOMRect): PathPoints {
+function computeNearestAnchors(stage: DOMRect, a: DOMRect, b: DOMRect, useViewportCoords: boolean): PathPoints {
   const acx = a.left + a.width / 2
   const acy = a.top + a.height / 2
   const bcx = b.left + b.width / 2
@@ -20,8 +20,12 @@ function computeNearestAnchors(stage: DOMRect, a: DOMRect, b: DOMRect): PathPoin
     const rightRect = acx <= bcx ? b : a
     const leftAnchors = getAnchorCenters(leftRect)
     const rightAnchors = getAnchorCenters(rightRect)
-    const from = { x: leftAnchors.right.x - stage.left, y: leftAnchors.right.y - stage.top }
-    const to = { x: rightAnchors.left.x - stage.left, y: rightAnchors.left.y - stage.top }
+    const from = useViewportCoords
+      ? { x: leftAnchors.right.x, y: leftAnchors.right.y }
+      : { x: leftAnchors.right.x - stage.left, y: leftAnchors.right.y - stage.top }
+    const to = useViewportCoords
+      ? { x: rightAnchors.left.x, y: rightAnchors.left.y }
+      : { x: rightAnchors.left.x - stage.left, y: rightAnchors.left.y - stage.top }
     return { orientation: 'horizontal', from, to }
   } else {
     // Vertical preference
@@ -29,8 +33,12 @@ function computeNearestAnchors(stage: DOMRect, a: DOMRect, b: DOMRect): PathPoin
     const bottomRect = acy <= bcy ? b : a
     const topAnchors = getAnchorCenters(topRect)
     const bottomAnchors = getAnchorCenters(bottomRect)
-    const from = { x: topAnchors.bottom.x - stage.left, y: topAnchors.bottom.y - stage.top }
-    const to = { x: bottomAnchors.top.x - stage.left, y: bottomAnchors.top.y - stage.top }
+    const from = useViewportCoords
+      ? { x: topAnchors.bottom.x, y: topAnchors.bottom.y }
+      : { x: topAnchors.bottom.x - stage.left, y: topAnchors.bottom.y - stage.top }
+    const to = useViewportCoords
+      ? { x: bottomAnchors.top.x, y: bottomAnchors.top.y }
+      : { x: bottomAnchors.top.x - stage.left, y: bottomAnchors.top.y - stage.top }
     return { orientation: 'vertical', from, to }
   }
 }
@@ -56,8 +64,9 @@ export function startPathAutoUpdate(args: {
   b: HTMLElement
   onChange: (pts: PathPoints) => void
   epsilon?: number
+  useViewportCoords?: boolean
 }): () => void {
-  const { stage, a, b, onChange, epsilon = 0.25 } = args
+  const { stage, a, b, onChange, epsilon = 0.25, useViewportCoords = false } = args
   let raf = 0
   let last: PathPoints | null = null
 
@@ -67,7 +76,7 @@ export function startPathAutoUpdate(args: {
     const sRect = stage.getBoundingClientRect()
     const aRect = getEffectiveRect(a)
     const bRect = getEffectiveRect(b)
-    const next = computeNearestAnchors(sRect, aRect, bRect)
+    const next = computeNearestAnchors(sRect, aRect, bRect, useViewportCoords)
     if (
       !last ||
       !(

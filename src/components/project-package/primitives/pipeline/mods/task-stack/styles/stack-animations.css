@@ -1,0 +1,60 @@
+/* Stack reveal animations */
+
+@keyframes stack-fade-in {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+/* Utility class (optional) */
+.stack-fade-in {
+  animation: stack-fade-in 320ms ease-out both;
+}
+
+/* Item intro that keeps opacity at 1 the whole time (so chip blur/alpha remain intact) */
+@keyframes stack-intro-preserve-alpha {
+  0% {
+    opacity: 1;            /* never reduce alpha */
+    transform: scale(0.96);
+    filter: blur(8px);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.01);
+    filter: blur(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0px);
+  }
+}
+
+/* Masked reveal that preserves opacity=1 (no alpha changes). */
+@keyframes stack-reveal-inset {
+  0% {
+    opacity: 1; /* never reduce */
+    clip-path: inset(50% 50% 50% 50% round 28px);
+    transform: translateY(8px);
+  }
+  60% {
+    clip-path: inset(6% 6% 6% 6% round 28px);
+    transform: translateY(2px);
+  }
+  100% {
+    clip-path: inset(0 0 0 0 round 28px);
+    transform: translateY(0);
+  }
+}
+
+/* Transform-only intro: never touches opacity or filters. */
+@keyframes stack-intro-transform-only {
+  0% { transform: translateY(14px) scale(0.94); }
+  60% { transform: translateY(4px) scale(1.02); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+/* Mask-based reveal (opacity-safe): grows a full-opaque mask from 0% to 100% width */
+@keyframes stack-mask-reveal {
+  0% { -webkit-mask-size: 0% 100%; mask-size: 0% 100%; }
+  100% { -webkit-mask-size: 100% 100%; mask-size: 100% 100%; }
+}

@@ -1,0 +1,223 @@
+.feedback-primitive{
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+/* message row layout (no extra horizontal padding so side margins match top/bottom) */
+.fp-msg{ display: flex; box-sizing: border-box; }
+.fp-msg.is-user{ justify-content: flex-end; }
+.fp-msg.is-assistant{ justify-content: flex-start; }
+
+.feedback-primitive__panel{
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.06));
+  border: 1px solid rgba(255,255,255,0.25);
+  box-shadow:
+    0 6px 18px rgba(0,0,0,0.25),
+    inset 0 0 0 1px rgba(255,255,255,0.12);
+  overflow: visible; /* ensure inner shadows are not clipped by panel radius */
+}
+
+/* Title pill (glassmorphic) */
+.feedback-primitive__title{
+  position: absolute;
+  left: 14px;
+  top: 14px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.22);
+  background: rgba(255,255,255,0.09);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
+  backdrop-filter: blur(8px) saturate(125%);
+  -webkit-backdrop-filter: blur(8px) saturate(125%);
+  color: #FFFFFF;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  font-size: 14px;
+}
+
+/* Intro chat bubble */
+.feedback-primitive__intro{
+  position: absolute;
+  left: 14px;
+  top: 14px;
+  max-width: min(78%, calc(100% - 28px));
+  padding: 10px 12px;
+  border-radius: 12px;
+  color: #FFFFFF;
+  background: rgba(255,255,255,0.09);
+  border: 1px solid rgba(255,255,255,0.22);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08), 0 6px 14px rgba(0,0,0,0.18);
+  backdrop-filter: blur(8px) saturate(125%);
+  -webkit-backdrop-filter: blur(8px) saturate(125%);
+  line-height: 1.25;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* Bottom prompt area */
+.feedback-primitive__prompt{
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 14px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 15px;
+  align-items: center;
+}
+
+/* Messages area */
+.feedback-primitive__messages{
+  position: absolute;
+  left: 15px;
+  right: 15px;
+  top: var(--messages-top-px, 15px);
+  bottom: var(--messages-bottom-px, 75px);
+  overflow-y: auto;
+  overflow-x: visible; /* allow horizontal shadows to render fully */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  /* Let shadows extend without altering the visible 15px side margins */
+  margin-right: -12px;
+  margin-left: -12px;
+  padding-right: 12px;
+  padding-left: 12px;
+  padding-bottom: 15px; /* exact lower bound spacing above prompt */
+  scroll-padding-bottom: 15px;
+  /* Allow shadow headroom without increasing visible top gap (handled by negative margin on first bubble) */
+  padding-top: 12px;
+  scroll-padding-top: 12px;
+  /* Remove overscroll rubber-band and scroll chaining artifacts */
+  overscroll-behavior: contain;
+}
+
+/* First bubble respects top headroom via padding; no offset needed */
+
+/* Hide scrollbars to remove the grey track artifact */
+.feedback-primitive__messages{ scrollbar-width: none; }
+.feedback-primitive__messages::-webkit-scrollbar{ width: 0; height: 0; background: transparent; }
+
+.fp-msg{ display: flex; }
+.fp-msg.is-user{ justify-content: flex-end; }
+
+.fp-msg__text{
+  max-width: 78%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  color: #FFFFFF;
+  background: rgba(255,255,255,0.09);
+  border: 1px solid rgba(255,255,255,0.22);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08), 0 6px 14px rgba(0,0,0,0.18);
+  backdrop-filter: blur(8px) saturate(125%);
+  -webkit-backdrop-filter: blur(8px) saturate(125%);
+  line-height: 1.25;
+  font-size: 14px;
+}
+
+/* Centered decision mod */
+.fp-decision-row{
+  display: flex;
+  justify-content: center;
+}
+
+.fp-decision__panel{
+  display: inline-flex;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.09);
+  border: 1px solid rgba(255,255,255,0.22);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08), 0 6px 14px rgba(0,0,0,0.18);
+  backdrop-filter: blur(8px) saturate(125%);
+  -webkit-backdrop-filter: blur(8px) saturate(125%);
+}
+
+.fp-decision__btn{
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.22);
+  background: rgba(255,255,255,0.06);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+  cursor: pointer;
+}
+
+
+.feedback-primitive__input-wrap{
+  position: relative;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.09);
+  border: 1px solid rgba(255,255,255,0.22);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  backdrop-filter: blur(8px) saturate(125%);
+  -webkit-backdrop-filter: blur(8px) saturate(125%);
+}
+
+.feedback-primitive__input{
+  width: 100%;
+  height: 100%;
+  outline: none;
+  border: none;
+  background: transparent;
+  color: #FFFFFF;
+  caret-color: #FFFFFF;
+  font: inherit;
+}
+
+.feedback-primitive__hint{
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(255,255,255,0.9);
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+}
+
+.feedback-primitive__input::placeholder{
+  color: rgba(255,255,255,0.9);
+}
+
+.feedback-primitive__send{
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 12px;
+  /* Match input field glass style */
+  border: 1px solid rgba(255,255,255,0.22);
+  background: rgba(255,255,255,0.09);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
+  color: #FFFFFF;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(8px) saturate(125%);
+  -webkit-backdrop-filter: blur(8px) saturate(125%);
+}
+
+.feedback-primitive__send:active{
+  transform: translateY(1px);
+}
+
+.feedback-primitive__send:hover{
+  background: rgba(255,255,255,0.12);
+  border-color: rgba(255,255,255,0.28);
+}

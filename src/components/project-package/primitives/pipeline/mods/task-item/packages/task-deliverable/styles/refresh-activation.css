@@ -1,0 +1,35 @@
+.refresh-activation {
+  position: relative;
+  width: var(--rf-d);
+  height: var(--rf-d);
+  border-radius: 9999px;
+  display: grid;
+  place-items: center;
+  touch-action: none; /* disable browser pan/zoom on touch to allow long-press */
+  -ms-touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent; /* remove blue tap highlight */
+  outline: none;
+  -webkit-touch-callout: none; /* disable iOS long-press callout */
+}
+
+.refresh-activation__halo {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9; /* above inner orb and icon */
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+}
+
+.refresh-activation__track {
+  stroke: rgba(255,255,255,0.22);
+}
+
+.refresh-activation__progress {
+  stroke: rgba(255,255,255,0.95);
+  transition: opacity 160ms ease;
+  filter: drop-shadow(0 1px 2px rgba(255,255,255,0.35)) drop-shadow(0 0 6px rgba(255,255,255,0.25));
+}

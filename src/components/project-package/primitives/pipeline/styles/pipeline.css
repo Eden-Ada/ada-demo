@@ -1,17 +1,47 @@
 .pipeline-shell {
   position: relative;
-  padding: 16px;
+  /* Increased space around the task stacks; children retain their sizing */
+  padding: var(--shell-pad-v, 88px) var(--shell-pad-h, 96px);
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.298), inset 0 1px 0 rgba(255,255,255,0.051);
+  box-sizing: border-box;
+  width: max-content; /* grow to fit tasks */
+  transition: background 300ms ease, border-color 300ms ease, box-shadow 300ms ease, opacity 300ms ease;
+}
+
+/* When a task tree is visible, fade out the container chrome but keep content intact */
+.pipeline-shell.pipeline-shell--tree-open {
+  /* 50% of default strengths */
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.06);
+  /* Restore outer drop shadow at half strength and keep inset highlight */
+  box-shadow: 0 8px 24px rgba(0,0,0,0.149), inset 0 1px 0 rgba(255,255,255,0.026);
+}
+
+/* Powered off: hide entire shell smoothly and disable interactions */
+.pipeline-shell.pipeline-shell--powered-off {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .pipeline {
   display: flex;
   flex-direction: row;
-  gap: 18px;
+  gap: var(--pipeline-gap, 18px);
+  flex-wrap: nowrap;
 }
 
-.pipeline.pipeline--compact { gap: 10px; }
-.pipeline.pipeline--roomy { gap: 64px; }
+.pipeline.pipeline--compact { gap: var(--pipeline-gap-compact, 10px); }
+.pipeline.pipeline--roomy { gap: var(--pipeline-gap-roomy, 64px); }
+
+/* Ensure blocks keep their designed width inside the pipeline */
+.pipeline .task-block {
+  flex: 0 0 245px; /* no shrink, fixed basis */
+  transition: opacity 450ms ease;
+}
+
+/* When a task tree is open, we add classes on blocks: the selected block keeps full opacity; others fade */
+.pipeline .task-block.is-dimmed { opacity: 0.5; }
+.pipeline .task-block.is-selected { opacity: 1; }

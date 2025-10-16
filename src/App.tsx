@@ -1,10 +1,10 @@
-import LabelPostHarness from './components/project-package/primitives/pipeline/label-post/tests/label-post-harness'
+import ProjectDemo from './components/project-package/project-demo/components/project-demo'
 import './App.css'
 
 function App() {
   return (
     <div className="App" style={{ minHeight: '100vh', background: '#0B0B0B' }}>
-      <LabelPostHarness />
+      <ProjectDemo />
     </div>
   )
 }

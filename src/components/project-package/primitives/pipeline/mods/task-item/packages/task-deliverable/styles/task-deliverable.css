@@ -1,0 +1,253 @@
+.task-deliverable {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  color: #fff;
+  isolation: isolate;
+}
+
+.task-deliverable__glass {
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(18px) saturate(1.08);
+  -webkit-backdrop-filter: blur(18px) saturate(1.08);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12), 0 12px 28px rgba(0, 0, 0, 0.35);
+  z-index: -1;
+}
+
+.task-deliverable__main { display: contents; }
+
+.task-deliverable__icon {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.task-deliverable__text { display: grid; gap: 6px; }
+
+.task-deliverable__title {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+.task-deliverable__meta { display: flex; gap: 8px; align-items: center; opacity: 0.9; }
+.task-deliverable__tag { font-size: 12px; text-transform: capitalize; color: rgba(255, 255, 255, 0.85); }
+.task-deliverable__status { font-size: 12px; color: #a5e1ff; }
+
+.task-deliverable__open {
+  appearance: none; border: none; background: none; color: #fff; cursor: pointer;
+  width: 36px; height: 36px; display: grid; place-items: center; border-radius: 10px;
+  transition: background-color 160ms ease, transform 120ms ease;
+}
+.task-deliverable__open:hover, .task-deliverable__open:focus-visible { background: rgba(255,255,255,0.08); outline: none; transform: translateY(-1px); }
+
+/* Sizes */
+.task-deliverable--sm { padding: 10px 12px; }
+.task-deliverable--lg { padding: 18px 20px; }
+
+/* Preview background (optional) */
+.task-deliverable__preview {
+  position: absolute; inset: 0; border-radius: 14px; z-index: -2; opacity: 0.25;
+  background-size: cover; background-position: center; filter: saturate(1.1) contrast(1.05);
+}
+
+/* Status tones */
+.task-deliverable--processing .task-deliverable__glass { box-shadow: inset 0 0 0 1px rgba(163, 212, 255, 0.35), 0 12px 28px rgba(0, 0, 0, 0.35); }
+.task-deliverable--failed .task-deliverable__glass { box-shadow: inset 0 0 0 1px rgba(255, 132, 132, 0.4), 0 12px 28px rgba(0, 0, 0, 0.35); }
+
+/* --- Centered glassmorphic circle (deliverable node) --- */
+.task-deliverable-node {
+  --d: var(--td-d, 220px);
+  width: var(--d);
+  height: var(--d);
+  border-radius: 9999px;
+  position: relative;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(28px) saturate(1.02);
+  -webkit-backdrop-filter: blur(28px) saturate(1.02);
+  box-shadow:
+    inset 1px 1px 2px rgba(255, 255, 255, 0.85),
+    inset -3px -3px 8px rgba(0, 0, 0, 0.10),
+    0 8px 24px rgba(0, 0, 0, 0.14),
+    0 16px 40px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.task-deliverable-node::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(rgba(255,255,255,0.06), rgba(255,255,255,0.06));
+  pointer-events: none;
+  z-index: 1; /* keep outer film below inner pane */
+}
+
+/* Inner concentric circle with 15px margin to the outer rim */
+.task-deliverable-node__inner {
+  --m: 15px; /* margin to outer edge */
+  position: absolute;
+  left: var(--m);
+  top: var(--m);
+  width: calc(var(--d) - (var(--m) * 2));
+  height: calc(var(--d) - (var(--m) * 2));
+  border-radius: 9999px;
+  background: rgba(255,255,255,0.10); /* stronger tint to kill high-contrast marks */
+  backdrop-filter: blur(100px) saturate(1.05);
+  -webkit-backdrop-filter: blur(100px) saturate(1.05);
+  will-change: backdrop-filter;
+  transform: translateZ(0);
+  /* External drop shadows (precise ~15% reduction) + inset rim highlights */
+  box-shadow:
+    0 8.5px 23.8px rgba(0, 0, 0, 0.36),  /* from 0 10px 28px */
+    0 3.4px 10.2px rgba(0, 0, 0, 0.22), /* from 0 4px 12px */
+    inset 1px 1px 2px rgba(255, 255, 255, 0.80),
+    inset -2px -3px 6px rgba(0, 0, 0, 0.12);
+}
+
+.task-deliverable-node__inner::after {
+  content: none; /* remove film from inner circle */
+}
+
+/* Media layer clipped to inner circle */
+.task-deliverable-node__media {
+  --m: 15px;
+  position: absolute;
+  left: var(--m);
+  top: var(--m);
+  width: calc(var(--d) - (var(--m) * 2));
+  height: calc(var(--d) - (var(--m) * 2));
+  border-radius: 9999px;
+  overflow: hidden; /* clipping */
+  z-index: 0; /* sits beneath glass inner layer */
+  filter: blur(36px); /* stronger assist blur under glass */
+  will-change: filter;
+  /* IMPORTANT: Do not set transform on the first child; the Connector picks
+     the first transformed child rect for anchors. Leaving transform unset
+     forces it to use the parent's outer rect so the path touches the outer orb. */
+}
+
+.task-deliverable-node__video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: saturate(1.05) contrast(1.05);
+  transform: scale(1.12); /* compensate for stronger blur crop */
+  pointer-events: none; /* never intercept */
+}
+
+/* Ensure inner glass pane sits above everything and blurs backdrop */
+.task-deliverable-node__inner {
+  z-index: 2;
+  position: absolute;
+}
+
+/* Centered demo label inside the clipped zone, above glass */
+.task-deliverable-node__label {
+  --m: 15px;
+  position: absolute;
+  left: var(--m);
+  top: var(--m);
+  width: calc(var(--d) - (var(--m) * 2));
+  height: calc(var(--d) - (var(--m) * 2));
+  border-radius: 9999px;
+  display: grid;
+  place-items: center;
+  z-index: 3; /* above glass */
+  pointer-events: none;
+  color: #FFFFFF;
+  font-size: 16.1px; /* 14px * 1.15 */
+  font-weight: 500; /* reduced weight further */
+  letter-spacing: 0.3px;
+  text-align: center;
+  text-shadow: none; /* remove shading */
+}
+
+.task-deliverable-node__label-text {
+  display: inline-block;
+  line-height: 1.2;
+  text-align: center;
+}
+
+/* Layout container for Deliverable orb + Refresh orb */
+.task-deliverable-pair {
+  position: relative;
+  width: calc(var(--pair-td-d) + var(--pair-gap) + var(--rf-d));
+  height: max(var(--pair-td-d), var(--rf-d));
+}
+
+.pair__left,
+.pair__right {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.pair__left { left: 0; }
+.pair__right { left: calc(var(--pair-td-d) + var(--pair-gap)); }
+
+/* Refresh orb (nested inside TaskDeliverable; not standalone) */
+.refresh-orb {
+  position: relative;
+  width: var(--rf-d, 120px);
+  height: var(--rf-d, 120px);
+  border-radius: 9999px;
+  display: grid;
+  place-items: center;
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(28px) saturate(1.02);
+  -webkit-backdrop-filter: blur(28px) saturate(1.02);
+  box-shadow:
+    inset 1px 1px 2px rgba(255,255,255,0.85),
+    inset -3px -3px 8px rgba(0,0,0,0.10),
+    0 8px 24px rgba(0,0,0,0.14),
+    0 16px 40px rgba(0,0,0,0.18);
+  isolation: isolate;
+}
+
+.refresh-orb__inner {
+  position: absolute;
+  inset: 12px;
+  border-radius: inherit;
+  background: rgba(255,255,255,0.10);
+  backdrop-filter: blur(80px) saturate(1.05);
+  -webkit-backdrop-filter: blur(80px) saturate(1.05);
+  box-shadow:
+    inset 1px 1px 2px rgba(255,255,255,0.80),
+    inset -2px -3px 6px rgba(0,0,0,0.12);
+}
+
+.refresh-orb__icon {
+  position: relative;
+  z-index: 2;
+  color: #FFFFFF;
+  opacity: 0.95;
+  display: grid;
+  place-items: center;
+  line-height: 0; /* avoid baseline offset */
+  transition: opacity 160ms ease;
+  will-change: opacity;
+}
+
+.refresh-orb__icon svg {
+  display: block; /* remove inline svg baseline gap */
+}
+
+/* Fade icon to 0.5 alpha only while long-press is active */
+.refresh-activation[data-active="1"] .refresh-orb__icon {
+  opacity: 0.5;
+}

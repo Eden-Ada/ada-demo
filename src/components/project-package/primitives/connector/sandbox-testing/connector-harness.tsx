@@ -1,7 +1,7 @@
 import React, { useCallback, useLayoutEffect, useRef, useState } from 'react'
 import Connector from '../connector'
 import VisionPrimitive from '../../vision-primitive/vision-primitive'
-import TaskBlock from '../../pipeline/task-block/task-block'
+import TaskBlock from '../../pipeline/mods/task-block/task-block'
 import { SandboxViewport, ZoomSlider, GridOverlay, TestBadge, sliderValueToScale } from '../../sandbox-env'
 import { startPathAutoUpdate, type PathPoints } from '../utils/update-path'
 import '../../vision-primitive/vision-harness.css'

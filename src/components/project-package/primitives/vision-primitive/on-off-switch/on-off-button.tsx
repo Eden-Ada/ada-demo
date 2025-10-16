@@ -5,13 +5,16 @@ import './on-off-switch.css'
 // The circle color matches the pill background via --vision-pill-bg
 // Size is computed as calc(var(--vision-pill-font-size) + 12px) so it equals
 // font-size (24px) + vertical padding (6px top + 6px bottom) = 36px by default.
-type OnOffButtonProps = { status?: 'active' | 'deactive'; onClick?: () => void }
+type OnOffButtonProps = { status?: 'active' | 'deactive'; onClick?: (next: 'active' | 'deactive') => void }
 
 const OnOffButton: React.FC<OnOffButtonProps>= ({ status = 'active', onClick }) => {
   const [stateStatus, setStateStatus] = useState<'active' | 'deactive'>(status)
   const toggle = () => {
-    setStateStatus((prev) => (prev === 'active' ? 'deactive' : 'active'))
-    onClick?.()
+    setStateStatus((prev) => {
+      const next = prev === 'active' ? 'deactive' : 'active'
+      onClick?.(next)
+      return next
+    })
   }
   return (
     <button

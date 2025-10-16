@@ -1,0 +1,114 @@
+.feedback-progression{position:absolute;inset:0;pointer-events:none;z-index:3;}
+.feedback-progression__svg{position:absolute;inset:0;}
+
+/* Base three arcs (static). Each arc draws with reduced alpha by default. */
+.feedback-progression__seg{
+  stroke: #FFFFFF;
+  /* allow staged fade-in to animate toward this target via CSS var */
+  opacity: var(--fp-seg-opacity, 0.5); /* uniform halo opacity for all arcs */
+  filter: drop-shadow(0 1px 2px rgba(255,255,255,0.25)) drop-shadow(0 0 4px rgba(255,255,255,0.18));
+  transition: opacity 120ms ease;
+}
+.feedback-progression__seg.is-selected{
+  opacity: 0.5; /* same as non-selected for consistent look */
+  filter: drop-shadow(0 1px 2px rgba(255,255,255,0.25)) drop-shadow(0 0 4px rgba(255,255,255,0.18));
+}
+
+/* Fractional completion overlay for each arc */
+.feedback-progression__progress{
+  stroke: #FFFFFF;
+  opacity: var(--fp-prog-opacity, 1);
+  filter: drop-shadow(0 1px 2px rgba(255,255,255,0.45)) drop-shadow(0 0 10px rgba(255,255,255,0.35));
+  transition: stroke-dasharray 120ms ease, stroke-dashoffset 120ms ease;
+}
+
+/* Selected progress overlay uses the same static styling; no pulse animation */
+
+/* Animated dotted trail under the lit progress for the selected arc only */
+.feedback-progression__trail{
+  stroke: #FFFFFF;
+  opacity: 0.85;
+  filter: drop-shadow(0 1px 2px rgba(255,255,255,0.35)) drop-shadow(0 0 8px rgba(255,255,255,0.28));
+  animation: fp-trail 700ms linear infinite;
+}
+
+@keyframes fp-trail {
+  from { stroke-dashoffset: var(--trail-ofs); }
+  to   { stroke-dashoffset: calc(var(--trail-ofs) + var(--trail-cycle)); }
+}
+
+/* Center text overlay */
+.feedback-progression__center{
+  position:absolute;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  gap:4px;
+  color:#FFFFFF;
+  pointer-events:none;
+  font-family: inherit;
+  font-size: 16.25px; /* +25% universal size for all three lines */
+  line-height: 1.15;
+  padding: 0 16px; /* provide inner side breathing room */
+}
+.feedback-progression__center .fp-pct{ font-weight:700; opacity: var(--fp-pct-opacity, 0.95); }
+.feedback-progression__center .fp-task{ font-weight:300; opacity: var(--fp-task-opacity, 0.90); white-space: normal; word-break: break-word; max-width: 85%; margin: 0 auto; }
+.feedback-progression__center .fp-label{ font-weight:100; opacity: var(--fp-label-opacity, 0.85); letter-spacing:0.2px; }
+
+/* Staggered entry when the feedback overlay first mounts */
+.task-deliverable-node__feedback.feedback-enter .feedback-progression__seg,
+.task-deliverable-node__feedback.feedback-enter .feedback-progression__progress{
+  /* fade rings first */
+  --fp-target-opacity: var(--fp-seg-opacity, 0.5);
+  opacity: 0;
+  will-change: opacity;
+  animation: fp-fade-in 350ms ease-out both;
+  animation-delay: 0ms;
+}
+.task-deliverable-node__feedback.feedback-enter .feedback-progression__progress{
+  /* progress overlays target full opacity */
+  --fp-target-opacity: var(--fp-prog-opacity, 1);
+}
+
+/* While entering, keep the pulse running for the selected progress overlay too */
+.task-deliverable-node__feedback.feedback-enter .feedback-progression__progress.is-selected{
+  will-change: opacity;
+  animation: fp-fade-in 350ms ease-out both;
+}
+
+.task-deliverable-node__feedback.feedback-enter .feedback-progression__center .fp-pct{
+  --fp-target-opacity: var(--fp-pct-opacity, 0.95);
+  opacity: 0;
+  transform: translateY(4px);
+  will-change: opacity, transform;
+  animation: fp-fade-up 350ms ease-out both;
+  animation-delay: 550ms;
+}
+.task-deliverable-node__feedback.feedback-enter .feedback-progression__center .fp-task{
+  --fp-target-opacity: var(--fp-task-opacity, 0.90);
+  opacity: 0;
+  transform: translateY(4px);
+  will-change: opacity, transform;
+  animation: fp-fade-up 350ms ease-out both;
+  animation-delay: 1100ms;
+}
+.task-deliverable-node__feedback.feedback-enter .feedback-progression__center .fp-label{
+  --fp-target-opacity: var(--fp-label-opacity, 0.85);
+  opacity: 0;
+  transform: translateY(4px);
+  will-change: opacity, transform;
+  animation: fp-fade-up 350ms ease-out both;
+  animation-delay: 1650ms;
+}
+
+@keyframes fp-fade-in {
+  from { opacity: 0; }
+  to { opacity: var(--fp-target-opacity, 1); }
+}
+@keyframes fp-fade-up {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: var(--fp-target-opacity, 1); transform: translateY(0); }
+}

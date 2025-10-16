@@ -1,0 +1,43 @@
+.refresh-progress{position:absolute;inset:0;pointer-events:none;z-index:3;}
+.refresh-progress__svg{position:absolute;inset:0;}
+
+/* Base three arcs (static). Each arc draws with reduced alpha by default. */
+.refresh-progress__seg{
+  stroke: #FFFFFF;
+  opacity: var(--rp-seg-opacity, 0.5);
+  filter: drop-shadow(0 1px 2px rgba(255,255,255,0.25)) drop-shadow(0 0 4px rgba(255,255,255,0.18));
+  transition: opacity 120ms ease;
+}
+.refresh-progress__seg.is-selected{
+  opacity: 0.5;
+  filter: drop-shadow(0 1px 2px rgba(255,255,255,0.25)) drop-shadow(0 0 4px rgba(255,255,255,0.18));
+}
+
+/* Fractional completion overlay for each arc */
+.refresh-progress__progress{
+  stroke: #FFFFFF;
+  opacity: var(--rp-prog-opacity, 1);
+  filter: drop-shadow(0 1px 2px rgba(255,255,255,0.45)) drop-shadow(0 0 10px rgba(255,255,255,0.35));
+  transition: stroke-dasharray 120ms ease, stroke-dashoffset 120ms ease;
+}
+
+/* Animated dotted trail for the selected arc only (optional, off by default) */
+.refresh-progress__trail{
+  stroke: #FFFFFF;
+  opacity: 0.85;
+  filter: drop-shadow(0 1px 2px rgba(255,255,255,0.35)) drop-shadow(0 0 8px rgba(255,255,255,0.28));
+  animation: rp-trail 700ms linear infinite;
+}
+
+@keyframes rp-trail {
+  from { stroke-dashoffset: var(--trail-ofs); }
+  to   { stroke-dashoffset: calc(var(--trail-ofs) + var(--trail-cycle)); }
+}
+
+/* Center text overlay */
+.refresh-progress__center{
+  position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:4px; color:#FFFFFF; pointer-events:none; font-family: inherit; font-size: 16.25px; line-height: 1.15;
+}
+.refresh-progress__center .fp-pct{ font-weight:700; opacity: var(--rp-pct-opacity, 0.95); }
+.refresh-progress__center .fp-task{ font-weight:300; opacity: var(--rp-task-opacity, 0.90); }
+.refresh-progress__center .fp-label{ font-weight:100; opacity: var(--rp-label-opacity, 0.85); letter-spacing:0.2px; }

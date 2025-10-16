@@ -1,0 +1,65 @@
+/* Animations for feedback primitive */
+
+@keyframes fp-expand-in {
+  0% {
+    transform: scale(0.86);
+    opacity: 0;
+    filter: blur(6px);
+  }
+  60% {
+    transform: scale(1.012);
+    opacity: 1;
+    filter: blur(0px);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+    filter: blur(0px);
+  }
+}
+
+@keyframes fp-char-in {
+  0% { opacity: 0; transform: translateY(4px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Apply to input field and send button once component mounts */
+.feedback-primitive__input-wrap,
+.feedback-primitive__send {
+  animation: fp-expand-in 360ms cubic-bezier(.22,.61,.36,1) both;
+}
+
+/* Slight stagger: button arrives just after the field */
+.feedback-primitive__send {
+  animation-delay: 80ms;
+}
+
+/* Bubbles (assistant + user) expand-in on mount/insert */
+.fp-msg__text {
+  animation: fp-expand-in 320ms cubic-bezier(.22,.61,.36,1) both;
+}
+
+/* Decision mod: pane + its two buttons with tiny cascade */
+.fp-decision__panel {
+  animation: fp-expand-in 340ms cubic-bezier(.22,.61,.36,1) both;
+  animation-delay: 40ms;
+}
+
+.fp-decision__btn {
+  animation: fp-expand-in 340ms cubic-bezier(.22,.61,.36,1) both;
+}
+
+.fp-decision__btn.is-reject { animation-delay: 80ms; }
+.fp-decision__btn.is-accept { animation-delay: 120ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .feedback-primitive__input-wrap,
+  .feedback-primitive__send,
+  .fp-msg__text,
+  .fp-decision__panel,
+  .fp-decision__btn,
+  .hint-ch { animation: none !important; }
+}
+
+/* Hint characters animate in with a small stagger */
+.hint-ch { display: inline-block; animation: fp-char-in 260ms ease-out both; }

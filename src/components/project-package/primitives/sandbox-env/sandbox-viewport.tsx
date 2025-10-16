@@ -45,29 +45,20 @@ const SandboxViewport = React.forwardRef<SandboxViewportHandle, SandboxViewportP
   }, [pan.x, pan.y, s, panning, onViewChange])
 
   const onWheel = useCallback((e: React.WheelEvent<HTMLDivElement>) => {
-    e.preventDefault()
     const vp = viewportRef.current
     if (!vp) return
-    const rect = vp.getBoundingClientRect()
-    const cx = e.clientX - rect.left
-    const cy = e.clientY - rect.top
-
     const factor = Math.exp(-e.deltaY * 0.0012)
     const next = clamp(s * factor, minScale, maxScale)
     if (next === s) return
-
-    const localX = (cx - pan.x) / s
-    const localY = (cy - pan.y) / s
-    const nextPanX = cx - localX * next
-    const nextPanY = cy - localY * next
-    setS(next)
-    setPan({ x: nextPanX, y: nextPanY })
-  }, [s, pan.x, pan.y, minScale, maxScale])
+    const { pan: nextPan, scale } = zoomAtViewportCenter(vp, pan, s, next)
+    setS(scale)
+    setPan(nextPan)
+  }, [s, pan, minScale, maxScale])
 
   const onPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     // Block panning if interacting with any primitive in editing/moving state
     const target = e.target as HTMLElement
-    const blocked = target.closest("[class*='--editing'], [class*='--moving']")
+    const blocked = target.closest("[class*='--editing'], [class*='--moving'], .refresh-activation, [data-pan-block='1']")
     if (blocked) return
     e.currentTarget.setPointerCapture(e.pointerId)
     dragStart.current = { x: e.clientX - pan.x, y: e.clientY - pan.y }

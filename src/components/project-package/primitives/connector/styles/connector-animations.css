@@ -2,12 +2,12 @@
 
 @keyframes connector-flow-forward {
   0%   { stroke-dashoffset: 0; }
-  100% { stroke-dashoffset: -8; }
+  100% { stroke-dashoffset: calc(var(--conn-dash-period, 12px) * -1); }
 }
 
 @keyframes connector-flow-reverse {
   0%   { stroke-dashoffset: 0; }
-  100% { stroke-dashoffset: 8; }
+  100% { stroke-dashoffset: var(--conn-dash-period, 12px); }
 }
 
 /* Apply animation only when flow class is set */

@@ -25,9 +25,10 @@ export type VisionState = 'active' | 'locked' | 'done'
 
 type VisionPrimitiveProps = {
   state?: VisionState
+  onPowerToggle?: (next: 'active' | 'deactive') => void
 }
 
-const VisionPrimitive: React.FC<VisionPrimitiveProps> = ({ state = 'active' }) => {
+const VisionPrimitive: React.FC<VisionPrimitiveProps> = ({ state = 'active', onPowerToggle }) => {
   const rootRef = useRef<HTMLDivElement | null>(null)
   const [isEditing, setIsEditing] = useState(false)
   const [savedText, setSavedText] = useState('Build a shippable prototype.')
@@ -164,7 +165,7 @@ const VisionPrimitive: React.FC<VisionPrimitiveProps> = ({ state = 'active' }) =
       {/* View mode Vision pill (hidden during edit) */}
       <div className="vision-primitive__label">
         <div className="vision-primitive__label-inner">
-          <OnOffButton />
+          <OnOffButton onClick={(next) => onPowerToggle?.(next)} />
           <span className="vision-primitive__badge">Vision</span>
         </div>
       </div>

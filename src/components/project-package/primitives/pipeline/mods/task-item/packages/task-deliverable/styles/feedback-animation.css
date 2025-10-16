@@ -1,0 +1,45 @@
+/* Release animation for feedback activation & connector fade */
+
+/* Pop then shrink (no fade) for the refresh orb container */
+.release-anim-orb {
+  animation: rf-shrink-fade 400ms ease-in forwards;
+  transform-origin: 50% 50%;
+}
+
+@keyframes rf-shrink-fade {
+  0% { transform: scale(1); }
+  20% { transform: scale(1.08); } /* slight pop */
+  100% { transform: scale(0); }
+}
+
+/* Connector fade-out (faster than orb shrink) */
+.connector-release-anim {
+  animation: connector-fade-out 180ms ease-out forwards;
+}
+
+@keyframes connector-fade-out {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Connector shrink-in tandem with orb */
+.connector-release-shrink {
+  animation: connector-shrink 260ms ease-in forwards;
+  transform-origin: center center;
+  transform-box: fill-box; /* ensure origin uses element box */
+}
+
+@keyframes connector-shrink {
+  0% { transform: scale(1); }
+  100% { transform: scale(0); }
+}
+
+/* Feedback overlay fade-in on entry */
+.task-deliverable-node__feedback.feedback-enter {
+  animation: feedback-fade-in 360ms ease-out both;
+}
+
+@keyframes feedback-fade-in {
+  0% { opacity: 0; transform: scale(0.98); }
+  100% { opacity: 1; transform: scale(1); }
+}

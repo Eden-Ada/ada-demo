@@ -1,0 +1,114 @@
+.task-block {
+  position: relative;
+  width: 245px; /* slightly narrowed further for framing */
+  height: auto; /* reflect actual content height */
+  border-radius: 30px; /* same curvature as vision outer layer */
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* center inner content horizontally */
+  justify-content: center; /* center inner content vertically */
+  padding: 26px 20px; /* symmetric top/bottom padding (16 + 10 each = +20 total) */
+  box-sizing: border-box; /* include padding within explicit width/height */
+  gap: 10px; /* consistent vertical rhythm between children */
+  /* Eden glass (same outer layer style used by vision-primitive) */
+  -webkit-backdrop-filter: blur(28px) saturate(1);
+  backdrop-filter: blur(28px) saturate(1);
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow:
+    inset 1px 1px 2px rgba(255, 255, 255, 0.85),
+    inset -3px -3px 8px rgba(0, 0, 0, 0.10),
+    0 8px 24px rgba(0, 0, 0, 0.14),
+    0 16px 40px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+  isolation: isolate;
+  /* keep compositing stable while overlay and children change */
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  will-change: box-shadow, filter, opacity, backdrop-filter;
+  contain: layout paint;
+  /* remove mobile tap highlight and any default outline */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  outline: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Shadow equalizer: optional extra drop shadow to normalize shading when
+   sibling stack items are hidden. Controlled via --tb-equalizer-shadow. */
+.task-block::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  /* default: no extra shadow; harness can set a stronger shadow string */
+  box-shadow: var(--tb-equalizer-shadow, none);
+  pointer-events: none;
+}
+
+/* subtle white film to preserve the glass look */
+.task-block::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(rgba(255,255,255,0.05), rgba(255,255,255,0.05));
+  pointer-events: none;
+}
+
+/* Name text under the circle */
+.task-block__name {
+  margin: 0; /* let parent gap control vertical spacing */
+  text-align: center;
+  color: #FFFFFF;
+  font-family: 'Helvetica Neue', Helvetica, Arial, system-ui, -apple-system, sans-serif;
+  font-weight: 350;
+  font-size: 20px;
+  letter-spacing: 0.2px;
+  opacity: var(--tb-text-alpha, 1);
+  pointer-events: none; /* prevent selection highlight */
+}
+
+/* Type pill (rounded rectangle) */
+.task-block__pill {
+  margin: 0 auto; /* center horizontally, no extra top space */
+  padding: 7px 16px;
+  border-radius: 14px;
+  color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.14); /* keep simple fill */
+  -webkit-backdrop-filter: none; /* remove blur */
+  backdrop-filter: none;          /* remove blur */
+  box-shadow: none;               /* remove glows/shading */
+  font-family: 'Helvetica Neue', Helvetica, Arial, system-ui, -apple-system, sans-serif;
+  font-weight: 310; /* requested */
+  font-size: 20px; /* match .task-block__name size */
+  line-height: 1;
+  letter-spacing: 1.4px;
+  width: max-content;
+  opacity: var(--tb-text-alpha, 1);
+  outline: none;
+  pointer-events: none; /* prevent selection highlight */
+}
+
+/* never show focus outline on the task block or its inner pill */
+.task-block:focus,
+.task-block:focus-visible,
+.task-block *:focus,
+.task-block *:focus-visible,
+.task-block__pill:focus,
+.task-block__pill:focus-visible {
+  outline: none !important;
+}
+
+/* also suppress active state decorations */
+.task-block:active,
+.task-block *:active,
+.task-block__pill:active {
+  outline: none !important;
+}
+
+/* prevent blue selection highlight inside the block */
+.task-block ::selection { background: transparent; color: inherit; }
+.task-block ::-moz-selection { background: transparent; color: inherit; }
