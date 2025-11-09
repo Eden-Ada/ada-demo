@@ -142,9 +142,10 @@ export type TaskItemProps = {
   showStateVisuals?: boolean
   forceArc?: boolean
   dimProgress?: boolean
+  progressLabel?: string
 }
 
-const TaskItem: React.FC<TaskItemProps> = ({ state = 'default', iconStrokeWidth = 1, iconAlpha = 0.8, labelMode = 'arc', showProgress, progress, showStateVisuals = true, forceArc = false, dimProgress = false }) => {
+const TaskItem: React.FC<TaskItemProps> = ({ state = 'default', iconStrokeWidth = 1, iconAlpha = 0.8, labelMode = 'arc', showProgress, progress, showStateVisuals = true, forceArc = false, dimProgress = false, progressLabel }) => {
   const id = useId()
   const [internalState, setInternalState] = useState<TaskItemState>(state)
   useEffect(() => { setInternalState(state) }, [state])
@@ -208,7 +209,13 @@ const TaskItem: React.FC<TaskItemProps> = ({ state = 'default', iconStrokeWidth 
           variant={2}
           outerGap={10}
           dimmed={dimProgress}
+          showValue={!progressLabel}
         />
+      )}
+      {shouldShowProgress && progressLabel && (
+        <div aria-live="polite" style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', zIndex: 3, pointerEvents: 'none', color: '#FFFFFF', fontSize: 11, fontWeight: 500, letterSpacing: 0.3, textAlign: 'center', padding: '0 18px', opacity: 0.95 }}>
+          {progressLabel}
+        </div>
       )}
       <div className="task-item__state-visuals" data-visible={visualsVisible ? '1' : '0'}>
         <div className="task-item__icon-wrap" style={{ transform: `translateY(${iconDy}px)` }}>

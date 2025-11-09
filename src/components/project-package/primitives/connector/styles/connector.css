@@ -11,6 +11,8 @@
   fill: none;
   stroke: rgba(255, 255, 255, 0.8);
   stroke-linecap: round;
+  vector-effect: non-scaling-stroke; /* keep dash size constant under scale */
+  shape-rendering: geometricPrecision; /* reduce aliasing during transforms */
   /* Dotted look (match TaskItem harness visuals) */
   stroke-width: 2.5px;
   stroke-dasharray: 3 9;

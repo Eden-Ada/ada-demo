@@ -12,9 +12,10 @@ export type PipelineProps = {
   className?: string
   spacing?: 'compact' | 'default' | 'roomy'
   onRefresh?: () => void
+  progressById?: Record<string, number>
 }
 
-const Pipeline: React.FC<PipelineProps> = ({ entries, className, spacing = 'default', onRefresh }) => {
+const Pipeline: React.FC<PipelineProps> = ({ entries, className, spacing = 'default', onRefresh, progressById }) => {
   const cls = ['pipeline-shell']
   if (className) cls.push(className)
   const listCls = ['pipeline']
@@ -112,7 +113,7 @@ const Pipeline: React.FC<PipelineProps> = ({ entries, className, spacing = 'defa
     <div ref={rootRef} className={cls.join(' ')} aria-label="Pipeline" onPointerDown={onPointerDown} onPointerLeave={onPointerLeave}>
       <div className={listCls.join(' ')}>
         {entries.map((e) => (
-          <TaskBlock key={e.id} descriptor={e.descriptor} />
+          <TaskBlock key={e.id} descriptor={e.descriptor} percent={progressById?.[e.id] ?? 0} />
         ))}
       </div>
       {/* Refresh overlays for blocks in 'refresh' mode */}

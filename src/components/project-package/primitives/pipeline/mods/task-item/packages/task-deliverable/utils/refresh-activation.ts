@@ -3,9 +3,12 @@ import React, { useCallback, useRef, useState } from 'react'
 export type UseRefreshActivationOptions = {
   durationMs?: number
   onComplete?: () => void
+  onTap?: () => void
+  tapMs?: number
+  visualDelayMs?: number
 }
 
-export function useRefreshActivation({ durationMs = 500, onComplete }: UseRefreshActivationOptions) {
+export function useRefreshActivation({ durationMs = 500, onComplete, onTap, tapMs = 260, visualDelayMs = 200 }: UseRefreshActivationOptions) {
   const startRef = useRef<number | null>(null)
   const rafRef = useRef<number | null>(null)
   const [progress, setProgress] = useState(0)
@@ -13,12 +16,14 @@ export function useRefreshActivation({ durationMs = 500, onComplete }: UseRefres
   const lastLogRef = useRef(-1)
   const downRef = useRef(false)
   const blockUpUntilRef = useRef(0)
+  const armTimerRef = useRef<number | null>(null)
 
   const stop = useCallback((complete: boolean) => {
     if (rafRef.current) cancelAnimationFrame(rafRef.current)
     rafRef.current = null
     startRef.current = null
     downRef.current = false
+    if (armTimerRef.current) { window.clearTimeout(armTimerRef.current); armTimerRef.current = null }
     setActive(false)
     setProgress(0)
     try { console.log('[refresh-activation] arcIsPlaying:', false, complete ? '(complete)' : '(cancel)') } catch {}
@@ -55,35 +60,40 @@ export function useRefreshActivation({ durationMs = 500, onComplete }: UseRefres
     } catch {}
     if (rafRef.current) cancelAnimationFrame(rafRef.current)
     downRef.current = true
-    setActive(true)
+    setActive(false)
     setProgress(0)
     startRef.current = performance.now()
     lastLogRef.current = 0
     // Give React a tiny window to mount the halo before honoring pointerup
     blockUpUntilRef.current = (typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now()) + 140
     try { console.log('[refresh-activation] arcIsPlaying:', true, '(start)') } catch {}
+    if (armTimerRef.current) window.clearTimeout(armTimerRef.current)
+    armTimerRef.current = window.setTimeout(() => {
+      if (!downRef.current) return
+      setActive(true) // show arc only after a short delay so taps don't flash it
+    }, Math.max(0, visualDelayMs))
     rafRef.current = requestAnimationFrame(tick)
-  }, [tick])
+  }, [tick, visualDelayMs])
 
   const cancel = useCallback((e?: React.PointerEvent<HTMLElement>) => {
     try {
       console.log('[refresh-activation] cancel', e?.type)
       e?.stopPropagation()
-      // Ignore spurious early ups inside the small grace window
-      const now = typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now()
-      if (now < blockUpUntilRef.current) {
-        console.log('[refresh-activation] cancel ignored (grace window)')
-        return
-      }
+      // Do not ignore early ups; we want taps to register immediately
       downRef.current = false
       if (e) {
         try { (e.currentTarget as any)?.releasePointerCapture?.(e.pointerId) } catch {}
       }
     } catch {}
     try { console.log('[refresh-activation] arcIsPlaying:', false, '(cancel)') } catch {}
+    // Determine if this was a short tap
+    const started = startRef.current
+    const elapsed = started != null ? (typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now()) - started : Number.POSITIVE_INFINITY
     stop(false)
-  }, [stop])
-
+    if (elapsed <= tapMs) {
+      try { onTap?.() } catch {}
+    }
+  }, [stop, tapMs, onTap])
 
   const handlers: {
     onPointerDown: (e: React.PointerEvent<HTMLElement>) => void,

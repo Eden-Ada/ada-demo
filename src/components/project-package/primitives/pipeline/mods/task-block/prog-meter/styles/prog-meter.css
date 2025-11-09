@@ -15,6 +15,16 @@
   isolation: isolate;
 }
 
+/* Bare variant: no inner glass, shadows, or blur; use ring only */
+.prog-meter.prog-meter--bare {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background: transparent;
+  box-shadow: none;
+}
+.prog-meter.prog-meter--bare::after { display: none; }
+.prog-meter.prog-meter--bare .prog-meter__value { display: none; }
+
 .prog-meter::after {
   content: '';
   position: absolute;

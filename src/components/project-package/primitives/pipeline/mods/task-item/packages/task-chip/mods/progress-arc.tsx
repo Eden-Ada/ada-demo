@@ -11,6 +11,7 @@ export type ProgressArcProps = {
   variant?: 1 | 2
   outerGap?: number
   dimmed?: boolean
+  showValue?: boolean
 }
 
 const ProgressArc: React.FC<ProgressArcProps> = ({
@@ -20,6 +21,7 @@ const ProgressArc: React.FC<ProgressArcProps> = ({
   variant = 2,
   outerGap = 10,
   dimmed = false,
+  showValue = true,
 }) => {
   const p = useMemo(() => {
     if (typeof percent === 'number') return Math.max(0, Math.min(100, Math.round(percent)))
@@ -63,15 +65,7 @@ const ProgressArc: React.FC<ProgressArcProps> = ({
           style={progressStyle}
         />
       </svg>
-      {completed ? (
-        <div className="prog-meter__check">
-          <svg width="90" height="90" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
-            <path className="prog-meter__check-path" pathLength={100} d="M4 12L9 17L20 6" />
-          </svg>
-        </div>
-      ) : (
-        <div className="prog-meter__value">{p}%</div>
-      )}
+      {completed || !showValue ? null : <div className="prog-meter__value">{p}</div>}
     </div>
   )
 }

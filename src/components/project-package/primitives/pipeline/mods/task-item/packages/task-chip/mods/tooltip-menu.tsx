@@ -11,6 +11,10 @@ export type TaskChipTooltipMenuProps = {
   tooltipVariant?: 'circle' | 'rect' | 'plain'
   showProgress?: boolean
   progressPercent?: number
+  progressLabel?: string
+  suppressTooltip?: boolean
+  onRequestOpen?: () => void
+  onModeChange?: (mode: 'automation' | 'manual' | 'outsource') => void
 }
 
 const TaskChipTooltipMenu: React.FC<TaskChipTooltipMenuProps> = ({
@@ -22,6 +26,10 @@ const TaskChipTooltipMenu: React.FC<TaskChipTooltipMenuProps> = ({
   tooltipVariant = 'circle',
   showProgress,
   progressPercent,
+  progressLabel,
+  suppressTooltip,
+  onRequestOpen,
+  onModeChange,
 }) => {
   const wrapperRef = useRef<HTMLDivElement | null>(null)
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
@@ -35,6 +43,19 @@ const TaskChipTooltipMenu: React.FC<TaskChipTooltipMenuProps> = ({
   const [showReset, setShowReset] = useState(false)
 
   useEffect(() => { setAnchorEl(wrapperRef.current) }, [])
+
+  // Respond to external selection (inline label menu) to update chip state
+  useEffect(() => {
+    const onMode = (ev: Event) => {
+      const e = ev as CustomEvent<any>
+      const mode = e.detail?.mode as 'automation' | 'manual' | 'outsource' | undefined
+      if (mode === 'automation' || mode === 'manual' || mode === 'outsource') {
+        setCur(mode)
+      }
+    }
+    window.addEventListener('ada-task-mode-selected', onMode as EventListener)
+    return () => window.removeEventListener('ada-task-mode-selected', onMode as EventListener)
+  }, [])
 
   const showPreviewBriefly = () => {
     if (previewTimerRef.current) {
@@ -59,7 +80,11 @@ const TaskChipTooltipMenu: React.FC<TaskChipTooltipMenuProps> = ({
       showPreviewBriefly()
       return
     }
-    // For default state or other cases, open the tooltip as before
+    // For default state or other cases, either request inline open or open tooltip
+    if (suppressTooltip && onRequestOpen) {
+      onRequestOpen()
+      return
+    }
     setOpen(true)
   }
 
@@ -135,6 +160,7 @@ const TaskChipTooltipMenu: React.FC<TaskChipTooltipMenuProps> = ({
         }
         progress={typeof progressPercent === 'number' ? Math.max(0, Math.min(1, progressPercent / 100)) : undefined}
         dimProgress={showReset}
+        progressLabel={progressLabel}
       />
       {/* Long-press reset overlay */}
       <div className="task-item__reset-overlay" data-visible={showReset ? '1' : '0'} onClick={() => { setShowReset(false); longPressTriggeredRef.current = false }}>
@@ -163,6 +189,8 @@ const TaskChipTooltipMenu: React.FC<TaskChipTooltipMenuProps> = ({
         onExited={() => {
           if (pendingNext) {
             setCur(pendingNext)
+            try { window.dispatchEvent(new CustomEvent('ada-task-mode-selected', { detail: { mode: pendingNext } })) } catch {}
+            try { onModeChange && onModeChange(pendingNext) } catch {}
             setPendingNext(null)
           }
         }}

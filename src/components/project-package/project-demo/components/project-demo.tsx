@@ -8,7 +8,6 @@ const ProjectDemo: React.FC = () => {
     <CanvasSpace
       badgeLabel="Canvas Demo"
       panePlacement="overlay"
-      paneWidthRatio={0.94}
     />
   )
 }

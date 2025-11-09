@@ -8,11 +8,13 @@ export type RefreshActivationProps = {
   className?: string
   children: React.ReactNode
   onActiveChange?: (active: boolean) => void
+  onTap?: () => void
+  tapMs?: number
 }
 
-const RefreshActivation: React.FC<RefreshActivationProps> = ({ diameter, onComplete, className, children, onActiveChange }) => {
+const RefreshActivation: React.FC<RefreshActivationProps> = ({ diameter, onComplete, className, children, onActiveChange, onTap, tapMs }) => {
   const wrapRef = useRef<HTMLDivElement | null>(null)
-  const { active, progress, handlers, cancel } = useRefreshActivation({ durationMs: 1500, onComplete })
+  const { active, progress, handlers, cancel } = useRefreshActivation({ durationMs: 1500, onComplete, onTap, tapMs })
 
   // Ensure cancellation only on unmount (not on each render)
   useEffect(() => {

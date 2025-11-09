@@ -18,7 +18,7 @@ export type AdaPromptsContextShape = {
 const AdaPromptsContext = createContext<AdaPromptsContextShape | null>(null)
 
 export const AdaPromptsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const initial: string[] = useMemo(
+  const seed: string[] = useMemo(
     () => [
       // 1) Greeting
       'Hello Patricio, my name is Ada.<br/>I’m your personal AI assistant<br/>here on Eden‑OS!',
@@ -28,22 +28,24 @@ export const AdaPromptsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     []
   )
 
+  // Prompts become mutable so we can append from the harness
+  const [prompts, setPrompts] = useState<string[]>(seed)
   const [idx, setIdx] = useState(0)
   const [animate, setAnimate] = useState(true)
-  const [revealed, setRevealed] = useState<boolean[]>(() => initial.map(() => false))
+  const [revealed, setRevealed] = useState<boolean[]>(() => seed.map(() => false))
 
   const canGoBack = idx > 0
-  const canGoForward = idx < initial.length - 1
+  const canGoForward = idx < prompts.length - 1
 
   const next = useCallback(() => {
     setIdx((i) => {
-      const ni = i < initial.length - 1 ? i + 1 : i
+      const ni = i < prompts.length - 1 ? i + 1 : i
       const already = revealed[ni]
       setAnimate(!already)
       window.dispatchEvent(new CustomEvent(already ? 'ada-prompt-done' : 'ada-prompt-start'))
       return ni
     })
-  }, [initial.length, revealed])
+  }, [prompts.length, revealed])
 
   const prev = useCallback(() => {
     setIdx((i) => {
@@ -69,17 +71,41 @@ export const AdaPromptsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     return () => window.removeEventListener('ada-prompt-done', onDone as any)
   }, [idx])
 
+  // Allow external code (harness) to append a prompt and optionally advance to it
+  React.useEffect(() => {
+    const onAppend = (e: Event) => {
+      const ce = e as CustomEvent<{ text: string; advance?: boolean; animate?: boolean }>
+      const text = ce?.detail?.text
+      if (!text || typeof text !== 'string') return
+      setPrompts((prev) => {
+        const next = prev.concat(text)
+        // Expand revealed map for the new item
+        setRevealed((prevRev) => prevRev.concat(false))
+        // Optionally advance to newly appended prompt
+        if (ce.detail?.advance) {
+          const nextIndex = next.length - 1
+          setIdx(nextIndex)
+          setAnimate(ce.detail?.animate !== false)
+          window.dispatchEvent(new CustomEvent('ada-prompt-start'))
+        }
+        return next
+      })
+    }
+    window.addEventListener('ada-prompts:append', onAppend as any)
+    return () => window.removeEventListener('ada-prompts:append', onAppend as any)
+  }, [])
+
   const value = useMemo<AdaPromptsContextShape>(() => ({
-    prompts: initial,
+    prompts,
     index: idx,
     displayIndex: idx + 1,
-    text: initial[idx],
+    text: prompts[idx],
     animate,
     canGoBack,
     canGoForward,
     next,
     prev,
-  }), [initial, idx, animate, canGoBack, canGoForward, next, prev])
+  }), [prompts, idx, animate, canGoBack, canGoForward, next, prev])
 
   return <AdaPromptsContext.Provider value={value}>{children}</AdaPromptsContext.Provider>
 }

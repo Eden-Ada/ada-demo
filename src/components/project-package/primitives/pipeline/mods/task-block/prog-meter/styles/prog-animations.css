@@ -2,7 +2,7 @@
 
 /* Arc transitions */
 .prog-meter__progress {
-  transition: stroke-dashoffset 260ms ease, stroke-opacity 260ms ease;
+  transition: stroke-dashoffset 520ms ease, stroke-opacity 520ms ease;
 }
 
 /* Fade arc to 0 (fully out) when complete */

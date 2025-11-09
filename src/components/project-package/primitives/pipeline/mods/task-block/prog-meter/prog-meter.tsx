@@ -87,8 +87,8 @@ const ProgMeter: React.FC<ProgMeterProps> = ({
           stroke={strokeColor}
           strokeWidth={ringStroke}
           fill="none"
-          {...(p >= 100 ? {} : { strokeDasharray: `${segLen} ${dashArray}` })}
-          strokeDashoffset={0}
+          strokeDasharray={dashArray}
+          strokeDashoffset={Math.max(0, dashArray - segLen)}
           pathLength={dashArray}
           style={progressStyle}
         />

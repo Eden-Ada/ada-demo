@@ -26,6 +26,20 @@
   pointer-events: none;
 }
 
+/* Remove default focus halos and tap highlights within the Pipeline demo */
+.pipeline-shell {
+  -webkit-tap-highlight-color: transparent;
+}
+.pipeline-shell * {
+  outline: none;
+}
+.pipeline-shell *:focus,
+.pipeline-shell *:focus-visible,
+.pipeline-shell *:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 .pipeline {
   display: flex;
   flex-direction: row;
