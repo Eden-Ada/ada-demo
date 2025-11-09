@@ -1,0 +1,290 @@
+/* Harness-only effects for Home without touching source files */
+/* InstancePicker drop-in (harness-only):
+   Drop from the top edge of the picker into final position.
+   - Do NOT transform the container to preserve backdrop-filter.
+   - We do move the glass circle itself (.ip-glass-200); backdrop-filter remains intact.
+*/
+
+.instance-picker.ip-harness-drop .ip-glass-200,
+.instance-picker.ip-harness-drop .ip-icon-center,
+.instance-picker.ip-harness-drop .ip-label,
+.instance-picker.ip-harness-drop .ip-chevron {
+  transform: translateY(-60%);
+  will-change: transform;
+}
+
+.instance-picker.ip-harness-drop.ip-harness-drop-visible .ip-glass-200,
+.instance-picker.ip-harness-drop.ip-harness-drop-visible .ip-icon-center,
+.instance-picker.ip-harness-drop.ip-harness-drop-visible .ip-label,
+.instance-picker.ip-harness-drop.ip-harness-drop-visible .ip-chevron {
+  transform: translateY(0);
+  transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Chevrons have a baseline translateY(-50%) centering; ensure drop ends there */
+.instance-picker.ip-harness-drop .ip-chevron { transform: translateY(calc(-50% - 60%)); }
+.instance-picker.ip-harness-drop.ip-harness-drop-visible .ip-chevron { transform: translateY(-50%); }
+
+/* Disable source pulse animation entirely */
+.instance-picker .ip-chevron.pulse { animation: none !important; }
+
+/* Reinforce glass: ensure the blur always renders regardless of ancestor compositing */
+.instance-picker .ip-glass-200 {
+  position: relative; /* for ::before */
+  isolation: auto; /* allow backdrop-filter sampling */
+}
+.instance-picker .ip-glass-200::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  background: rgba(255, 255, 255, 0.04);
+  -webkit-backdrop-filter: blur(28px) saturate(1);
+  backdrop-filter: blur(28px) saturate(1);
+}
+
+/* Selection state (harness-applied via .ip-selected on .instance-picker) */
+.instance-picker.ip-selected .ip-group > *:not(.ip-glass-200):not(.ip-checkmark) {
+  opacity: 0.5;
+  transition: opacity 300ms ease;
+}
+
+/* Also dim the icon rendered inside the glass container */
+.instance-picker.ip-selected .ip-glass-200 .ip-icon-center {
+  opacity: 0.5;
+  transition: opacity 300ms ease;
+}
+
+/* Hide chevrons completely after selection and block interaction */
+.instance-picker.ip-selected .ip-chevron {
+  opacity: 0;
+  transition: opacity 300ms ease;
+  pointer-events: none;
+}
+
+/* Centered checkmark overlay inside the circular pane */
+.instance-picker .ip-checkmark {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 56%;
+  height: 56%;
+  color: #ffffff;
+  z-index: 10;
+  pointer-events: none;
+}
+.instance-picker .ip-checkmark > svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  stroke-width: 1.1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Animated draw */
+.instance-picker .ip-checkmark path {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: ipCheckDraw 800ms ease forwards;
+}
+
+@keyframes ipCheckDraw {
+  to { stroke-dashoffset: 0; }
+}
+
+/* ========================= */
+/* Prompt input mode (harness) */
+/* ========================= */
+/* Make Next arrow look enabled on Prompt 3 before input-mode */
+.prompt-paginator.ada-harness-enable-next .paginator-btn.next {
+  opacity: 1 !important;            /* same opacity as enabled back arrow */
+  cursor: pointer !important;        /* clickable */
+  color: rgba(0,0,0,0.45) !important; /* exact same tint as back arrow */
+}
+.prompt-paginator.ada-harness-enable-next .paginator-btn.next.is-disabled {
+  opacity: 1 !important;             /* override disabled dimming */
+  cursor: pointer !important;
+}
+.prompt-paginator.ada-harness-enable-next .paginator-btn.next:hover {
+  transform: translateY(-1px);       /* match back arrow hover */
+}
+/* Keep paginator above any overlapping prompt bubble layers */
+.prompt-paginator { position: relative; z-index: 5; }
+
+/* ========================= */
+/* Orb loader (temporary demo) */
+/* ========================= */
+.orb-loader {
+  position: absolute;
+  inset: 0;
+  display: block;
+  border-radius: 50%;
+  overflow: hidden;
+  z-index: 8; /* above Rive and glass */
+}
+.orb-loader__ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg); /* start at 12 o'clock */
+}
+.orb-loader__ring circle { fill: none; }
+.orb-loader__ring .bg {
+  stroke: rgba(255,255,255,0.28);
+  stroke-width: 2; /* thinner track like ProgressArc v2 */
+  filter: drop-shadow(0 1px 2px rgba(255,255,255,0.20)) drop-shadow(0 0 4px rgba(255,255,255,0.14));
+}
+.orb-loader__ring .fg {
+  stroke: rgba(255,255,255,0.95);
+  stroke-width: 2; /* thinner lit arc */
+  stroke-linecap: round;
+  stroke-dasharray: 690;
+  stroke-dashoffset: 690;
+  /* stronger glow derived from feedback/refresh progress */
+  filter: drop-shadow(0 1px 2px rgba(255,255,255,0.45)) drop-shadow(0 0 10px rgba(255,255,255,0.35));
+  animation: orbProgress 2200ms ease-in-out infinite;
+}
+@keyframes orbProgress {
+  0%   { stroke-dashoffset: 690; }
+  50%  { stroke-dashoffset: 275; }
+  100% { stroke-dashoffset: 690; }
+}
+/* one-shot progress variant */
+.orb-loader.is-once .orb-loader__ring .fg {
+  animation: orbProgressOnceIrregular 7600ms ease-out forwards;
+}
+/* Irregular progress (non-linear, with brief stalls and spurts) */
+@keyframes orbProgressOnceIrregular {
+  0%   { stroke-dashoffset: 690; }
+  3%   { stroke-dashoffset: 682; animation-timing-function: cubic-bezier(0.2,0.9,0.2,1); }
+  7%   { stroke-dashoffset: 660; }
+  11%  { stroke-dashoffset: 655; } /* brief stall */
+  16%  { stroke-dashoffset: 620; animation-timing-function: cubic-bezier(0.1,0.7,0.2,1); }
+  20%  { stroke-dashoffset: 612; } /* micro-hold */
+  26%  { stroke-dashoffset: 570; animation-timing-function: cubic-bezier(0.3,0.9,0.2,1); }
+  31%  { stroke-dashoffset: 568; } /* hold */
+  37%  { stroke-dashoffset: 520; }
+  42%  { stroke-dashoffset: 518; } /* tiny pause */
+  48%  { stroke-dashoffset: 450; animation-timing-function: cubic-bezier(0.15,0.85,0.25,1); }
+  52%  { stroke-dashoffset: 448; } /* hold */
+  58%  { stroke-dashoffset: 380; }
+  62%  { stroke-dashoffset: 370; } /* slight pause */
+  68%  { stroke-dashoffset: 330; animation-timing-function: cubic-bezier(0.2,0.8,0.2,1); }
+  72%  { stroke-dashoffset: 328; } /* hold */
+  78%  { stroke-dashoffset: 260; animation-timing-function: cubic-bezier(0.15,0.9,0.2,1); }
+  83%  { stroke-dashoffset: 240; } /* small stall */
+  88%  { stroke-dashoffset: 160; animation-timing-function: cubic-bezier(0.2,0.9,0.2,1); }
+  92%  { stroke-dashoffset: 140; }
+  96%  { stroke-dashoffset: 70;  animation-timing-function: cubic-bezier(0.1,0.7,0.2,1); }
+  100% { stroke-dashoffset: 0; }
+}
+.orb-loader__icon {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 38%;
+  height: 38%;
+  color: rgba(255,255,255,0.95);
+  z-index: 9;
+  pointer-events: none;
+}
+.orb-loader__icon svg { width: 100%; height: 100%; display: block; stroke-width: 0.6; }
+
+/* fade the rive content under loader when present */
+.ada-orb__rive-wrap.is-hidden { opacity: 0; transition: opacity 250ms ease; }
+
+/* Inset variant: fit ring/icon inside the true glass pane size */
+.orb-loader.orb-loader--inset { --orb-ring-inset: 20px; }
+.orb-loader.orb-loader--inset .orb-loader__ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(var(--orb-glass-size, 225px) - (var(--orb-ring-inset, 30px) * 2));
+  height: calc(var(--orb-glass-size, 225px) - (var(--orb-ring-inset, 30px) * 2));
+  transform: translate(-50%, -50%) rotate(-90deg);
+}
+.orb-loader.orb-loader--inset .orb-loader__icon {
+  width: calc(var(--orb-glass-size, 225px) * 0.38);
+  height: calc(var(--orb-glass-size, 225px) * 0.38);
+}
+.orb-loader__labels {
+  position: absolute;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  width: 100%;
+  text-align: center;
+  color: rgba(255,255,255,0.85);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  pointer-events: none;
+}
+.orb-loader__labels .label-top {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.2;
+}
+.orb-loader__labels .label-bottom {
+  font-size: 14px;
+  opacity: 0.9;
+}
+.ada-prompt .ada-prompt__text.ada-input-mode {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 6px; /* reduced to move input up */
+  padding: 22px 24px 20px 24px;
+}
+.ada-prompt .ada-prompt__text.ada-input-mode p:not(.ada-input-header) { display: none; }
+.ada-prompt .ada-input-header {
+  margin: 2px 0 4px 0; /* reduced bottom margin */
+  text-align: center;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-weight: 300;
+  font-size: 22px;
+  line-height: 1.2;
+  color: #ffffff; /* white text inside pill */
+  display: inline-flex !important; /* visible; shrink to text */
+  align-items: center;
+  justify-content: center;
+  min-height: 28px; /* prevent collapse */
+  padding: 6px 12px; /* pill padding */
+  border-radius: 999px; /* fully rounded */
+  background: #b0b0b0; /* lighter grey for the pill */
+  position: relative;
+  z-index: 1;
+  align-self: center; /* center within bubble */
+}
+.ada-prompt .ada-input-header::before,
+.ada-prompt .ada-input-header::after { content: none; display: none; }
+.ada-prompt .ada-input-wrap { width: 100%; }
+.ada-prompt .ada-input-area {
+  display: block;
+  width: 100%;
+  min-height: 120px;
+  resize: none;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  margin-top: 0; /* moved up by 20px total via gap/margin tweaks */
+  box-sizing: border-box;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 28px; /* match prompt text size */
+  line-height: 1.25;
+  color: #757575; /* match prompt text color */
+  background: transparent; /* remove white box */
+  outline: none;
+  box-shadow: none; /* no inner/outer shadow */
+  position: relative;
+  z-index: 0;
+}
+
+.ada-prompt .ada-input-area::placeholder {
+  color: rgba(117,117,117,0.55); /* subtle prompt-like placeholder */
+}

@@ -2,6 +2,7 @@ import React, { useCallback, useImperativeHandle, useLayoutEffect, useRef, useSt
 import { createPortal } from 'react-dom'
 import { SandboxViewport, GridOverlay, TestBadge, sliderValueToScale, clamp } from '../../primitives/sandbox-env'
 import ZoomSlider from './zoom-slider'
+import TaskPane from './canvas-space/task-pane'
 import VisionPrimitive from '../../primitives/vision-primitive/vision-primitive'
 import { createVisionState, deriveVisionProps, updateScale } from '../utils/vision-primitive'
 import Pipeline from '../../primitives/pipeline/pipeline'
@@ -1172,8 +1173,9 @@ const CanvasSpace = React.forwardRef(function CanvasSpace(
         </div>
       )}
 
-      {/* Portal: render the right-gap slot to document.body so it's fully decoupled from canvas DOM */}
-      {instancePaneOpen && createPortal(
+      {/* Portal: render the right-gap slot moved into TaskPane */}
+      <TaskPane open={instancePaneOpen} CANVAS_FRAME_GAP={CANVAS_FRAME_GAP} SIDE_PANE_RESERVED={SIDE_PANE_RESERVED} SIDE_PANE_WIDTH={SIDE_PANE_WIDTH} SIDE_PANE_V_INSET={SIDE_PANE_V_INSET} SLOT_CENTER_BIAS_X={SLOT_CENTER_BIAS_X} />
+      {false && createPortal(
         <div aria-label="right-gap-slot" style={{ position: 'fixed', top: 0, right: CANVAS_FRAME_GAP, width: SIDE_PANE_RESERVED, height: '100vh', pointerEvents: 'none', overflow: 'hidden', zIndex: 6 }}>
           <div aria-label="right-gap-pane" style={{ position: 'absolute', top: SIDE_PANE_V_INSET, left: '50%', width: SIDE_PANE_WIDTH, height: `calc(100vh - ${SIDE_PANE_V_INSET * 2}px)`, transform: instancePaneOpen ? `translateX(calc(-50% + ${SLOT_CENTER_BIAS_X}px))` : `translateX(calc(-50% + ${SLOT_CENTER_BIAS_X + SIDE_PANE_RESERVED}px))`, pointerEvents: instancePaneOpen ? 'auto' : 'none', transition: 'transform 260ms ease', willChange: 'transform' }}>
             <div style={{ position: 'absolute', inset: 0, borderRadius: 18, border: '1px solid rgba(255,255,255,0.42)', background: 'rgba(255,255,255,0.14)', backdropFilter: 'blur(28px) saturate(1.1)', WebkitBackdropFilter: 'blur(28px) saturate(1.1)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.16)', pointerEvents: 'none' }} />
