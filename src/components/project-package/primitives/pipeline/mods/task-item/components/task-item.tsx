@@ -16,6 +16,7 @@ export type TaskItemProps = {
   exposeAnchors?: (a: { stageEl: HTMLElement | null; chipEl: HTMLElement | null; labelEl: HTMLElement | null }) => void
   tooltipVariant?: 'circle' | 'rect' | 'plain'
   progressPercent?: number
+  progressLabel?: string
   variant?: 'duo' | 'unified'
   enableSwipeInfo?: boolean
   infoTitle?: string
@@ -26,7 +27,7 @@ export type TaskItemProps = {
   morphOnOutsource?: boolean
 }
 
-const TaskItem: React.FC<TaskItemProps> = ({ text = 'Task Item', gap = 64, className, style, mode = 'internal', exposeAnchors, tooltipVariant = 'circle', progressPercent, variant = 'unified', enableSwipeInfo = false, infoTitle, infoText, chipOnly = false, labelVisibility = 'auto', useTooltipMenu = false, morphOnOutsource = false }) => {
+const TaskItem: React.FC<TaskItemProps> = ({ text = 'Task Item', gap = 64, className, style, mode = 'internal', exposeAnchors, tooltipVariant = 'circle', progressPercent, progressLabel, variant = 'unified', enableSwipeInfo = false, infoTitle, infoText, chipOnly = false, labelVisibility = 'auto', useTooltipMenu = false, morphOnOutsource = false }) => {
   const stageRef = useRef<HTMLDivElement | null>(null)
   const chipRef = useRef<HTMLDivElement | null>(null)
   const labelRef = useRef<HTMLDivElement | null>(null)
@@ -134,6 +135,18 @@ const TaskItem: React.FC<TaskItemProps> = ({ text = 'Task Item', gap = 64, class
       }
     }, [labelMenuOpen])
     useEffect(() => { if (outsourceStage === 'payment') setHasPayment(false) }, [outsourceStage])
+    // Sync external progressPercent prop with internal chipProgress state
+    useEffect(() => {
+      if (progressPercent !== undefined && progressPercent >= 0) {
+        setChipProgress(progressPercent)
+      }
+    }, [progressPercent])
+    // Sync external progressLabel prop with internal progressNote state
+    useEffect(() => {
+      if (progressLabel !== undefined) {
+        setProgressNote(progressLabel || null)
+      }
+    }, [progressLabel])
     useEffect(() => {
       const onSidebarDrop = () => {
         if (morphKind === 'outsource' && outsourceStage === 'payment') {

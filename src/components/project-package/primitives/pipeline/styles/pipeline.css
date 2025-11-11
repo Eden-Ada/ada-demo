@@ -59,3 +59,15 @@
 /* When a task tree is open, we add classes on blocks: the selected block keeps full opacity; others fade */
 .pipeline .task-block.is-dimmed { opacity: 0.5; }
 .pipeline .task-block.is-selected { opacity: 1; }
+
+/* Tooltip fade-in animation */
+@keyframes tooltip-fade-in {
+  from {
+    opacity: 0;
+    transform: translateX(50%) translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(50%) translateY(0);
+  }
+}

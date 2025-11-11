@@ -10,3 +10,15 @@
 .task-block.is-complete .task-block__pill {
   opacity: var(--tb-text-alpha, 0.5);
 }
+
+/* Fly-in animation for newly enabled task blocks */
+@keyframes task-block-fly-in {
+  0% {
+    transform: translateX(-100px) scale(0.8);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+}

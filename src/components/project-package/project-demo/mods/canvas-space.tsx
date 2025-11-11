@@ -1,5 +1,5 @@
 import React, { useCallback, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
+ 
 import { SandboxViewport, GridOverlay, TestBadge, sliderValueToScale, clamp } from '../../primitives/sandbox-env'
 import ZoomSlider from './zoom-slider'
 import TaskPane from './canvas-space/task-pane'
@@ -10,11 +10,10 @@ import Connector from '../../primitives/connector/connector'
 import '../../primitives/vision-primitive/vision-harness.css'
 import '../../primitives/pipeline/mods/task-item/packages/task-deliverable/styles/task-deliverable.css'
 // Task tree (task-stack harness pieces)
-import TaskItem from '../../primitives/pipeline/mods/task-item/components/task-item'
+import OverlayStage from './canvas-space/overlay-stage'
 import { createAnchorsBucket, setInstanceAnchors } from '../../primitives/pipeline/mods/task-item/utils/instance'
 import { taskTreeTransforms } from '../../primitives/pipeline/mods/task-stack/mods/task-tree'
-import Research from '../../../ada-demo-again/one-ada-proj/research'
-import VibePanel from '../../../ada-demo-again/one-ada-proj/vibe-panel'
+import DebugMenu from './debug-menu'
 
 export type CanvasSpaceHandle = {
   setScale: (next: number) => void
@@ -109,14 +108,7 @@ const CanvasSpace = React.forwardRef(function CanvasSpace(
   const [vibeRect, setVibeRect] = useState<{ left: number; top: number; width: number; height: number } | null>(null)
   const [vibeVisible, setVibeVisible] = useState(false)
   const [instancePaneOpen, setInstancePaneOpen] = useState(false)
-  const [panePage, setPanePage] = useState(0)
   const [chipOk, setChipOk] = useState(true)
-  const paneSwipeStartRef = useRef<{ x: number; y: number } | null>(null)
-  const paneSwipeDidSwipeRef = useRef(false)
-  const paneContentRef = useRef<HTMLDivElement | null>(null)
-  const [paneContentW, setPaneContentW] = useState(0)
-  const [paneDragging, setPaneDragging] = useState(false)
-  const [paneDragDX, setPaneDragDX] = useState(0)
   const [spawnSelectorVisible, setSpawnSelectorVisible] = useState(false)
   const [firstBadge, setFirstBadge] = useState<'1' | '2'>('1')
   const [logoTaskMounted, setLogoTaskMounted] = useState(false)
@@ -135,7 +127,21 @@ const CanvasSpace = React.forwardRef(function CanvasSpace(
   // Vision power state controls Pipeline visibility
   const [pipelinePoweredOn, setPipelinePoweredOn] = useState(true)
   const [pipeProgress, setPipeProgress] = useState<Record<string, number>>({})
+  const [enabledBlocks, setEnabledBlocks] = useState<string[]>(['b1']) // Start with only Branding enabled
+  const [animatingBlocks, setAnimatingBlocks] = useState<string[]>([]) // Tracks blocks currently animating in
+  const [orgPanelVisible, setOrgPanelVisible] = useState(false)
+  const orgPanelTimerRef = useRef<number | null>(null)
   const [worldPos, setWorldPos] = useState<{ pipeline?: { x: number; y: number }; vision?: { x: number; y: number } }>({})
+  
+  // Show org panel on interaction and hide after 2s of inactivity
+  const showOrgPanel = useCallback(() => {
+    setOrgPanelVisible(true)
+    if (orgPanelTimerRef.current) window.clearTimeout(orgPanelTimerRef.current)
+    orgPanelTimerRef.current = window.setTimeout(() => {
+      setOrgPanelVisible(false)
+    }, 2000)
+  }, [])
+  
   const onViewChange = useCallback((v: any) => {
     setView({ pan: v.pan, scale: v.scale })
     setVision((prev) => updateScale(prev, v.scale))
@@ -143,16 +149,8 @@ const CanvasSpace = React.forwardRef(function CanvasSpace(
       const vpEl = v.viewport as HTMLDivElement | null
       if (vpEl) setVpSize({ w: vpEl.clientWidth, h: vpEl.clientHeight })
     } catch {}
-  }, [])
-
-  // Measure pane content width for carousel math
-  React.useEffect(() => {
-    const onResize = () => { const el = paneContentRef.current; if (el) setPaneContentW(el.clientWidth) }
-    onResize()
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
-  }, [instancePaneOpen])
-
+    showOrgPanel()
+  }, [showOrgPanel])
 
   // Measure world (stage-local) coordinates once for stable placement.
   // Default Vision: aligned to Pipeline's left edge, just beneath its bottom.
@@ -345,6 +343,65 @@ const CanvasSpace = React.forwardRef(function CanvasSpace(
     }
     window.addEventListener('ada-task-automation-complete', onAutomationComplete as any)
     return () => window.removeEventListener('ada-task-automation-complete', onAutomationComplete as any)
+  }, [])
+
+  // Advance Branding progress after manual file upload completes (4/5 = 80%)
+  React.useEffect(() => {
+    const onManualFileProcessed = (evt: any) => {
+      setPipeProgress((p) => ({ ...p, b1: Math.max(p.b1 ?? 0, 80) }))
+    }
+    window.addEventListener('ada-manual-file-processed', onManualFileProcessed as any)
+    return () => window.removeEventListener('ada-manual-file-processed', onManualFileProcessed as any)
+  }, [])
+
+  // Complete Branding block after final confirmation (5/5 = 100%) and enable Design block with animation
+  React.useEffect(() => {
+    const onBrandingComplete = (evt: any) => {
+      setPipeProgress((p) => ({ ...p, b1: 100 }))
+      // Wait for checkmark animation to complete (2s) before enabling Design block
+      setTimeout(() => {
+        setAnimatingBlocks((blocks) => [...blocks, 'b2'])
+        setEnabledBlocks((blocks) => blocks.includes('b2') ? blocks : [...blocks, 'b2'])
+        // Remove from animating state after fly-in completes
+        setTimeout(() => {
+          setAnimatingBlocks((blocks) => blocks.filter(b => b !== 'b2'))
+        }, 600)
+      }, 2000)
+    }
+    window.addEventListener('ada-branding-block-complete', onBrandingComplete as any)
+    return () => window.removeEventListener('ada-branding-block-complete', onBrandingComplete as any)
+  }, [])
+
+  // Debug handlers
+  const handleCompleteTaskBlock = useCallback((blockId: string) => {
+    setPipeProgress((p) => ({ ...p, [blockId]: 100 }))
+    setEnabledBlocks((blocks) => {
+      const blockNum = parseInt(blockId.substring(1))
+      const nextBlockId = `b${blockNum + 1}`
+      return blocks.includes(nextBlockId) ? blocks : [...blocks, nextBlockId]
+    })
+  }, [])
+
+  const handleCompleteBrandingSection = useCallback((section: string) => {
+    if (section === 'all') {
+      // Complete entire branding block
+      window.dispatchEvent(new CustomEvent('ada-branding-block-complete'))
+    } else if (section === 'research') {
+      // Complete research section
+      setPipeProgress((p) => ({ ...p, b1: 20 }))
+    } else if (section === 'task1') {
+      // Complete logo task
+      setPipeProgress((p) => ({ ...p, b1: 40 }))
+    } else if (section === 'task2') {
+      // Complete vibe task
+      setPipeProgress((p) => ({ ...p, b1: 60 }))
+    } else if (section === 'task3') {
+      // Complete manual upload task and trigger confirmation
+      setPipeProgress((p) => ({ ...p, b1: 80 }))
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('ada-branding-block-complete'))
+      }, 100)
+    }
   }, [])
 
   // When the second pane confirms, pulse and update the first pane's badge to '2'
@@ -624,457 +681,66 @@ const CanvasSpace = React.forwardRef(function CanvasSpace(
         >
           <SandboxViewport ref={sandRef as any} onViewChange={onViewChange} initialScale={initialScale} minScale={minScale} maxScale={maxScale}>
             {/* Stage area where demo components will be placed */}
-            <div
-              ref={stageRef}
-              style={{ position: 'relative', width: stageWLocal, height: stageHLocal }}
-            >
-              <div ref={paneContainerRef} style={{ position: 'absolute', left: paneLeftLocal, top: paneTopLocal, width: compPaneWLocal, height: compPaneHLocal }}>
-                {/* Absolute-anchored layout for vector-consistent spacing */}
-                <div
-                  ref={pipelineRef}
-                  style={{
-                    position: 'absolute',
-                    left: (worldPos.pipeline ? worldPos.pipeline.x - paneLeftLocal : 32),
-                    top: (worldPos.pipeline ? worldPos.pipeline.y - paneTopLocal : 24),
-                    transform: `scale(${PIPELINE_SCALE})`,
-                    transformOrigin: 'top left',
-                    ['--pipeline-gap-roomy' as any]: '80px',
-                  }}
-                  onPointerDownCapture={(e) => {
-                    // Toggle task tree for tapped TaskBlock using capture so TaskBlock's stopPropagation doesn't block us
-                    const root = pipelineRef.current
-                    if (!root) return
-                    const blocks = Array.from(root.querySelectorAll<HTMLElement>('.pipeline .task-block'))
-                    const t = e.target as HTMLElement
-                    const idx = blocks.findIndex((b) => b.contains(t))
-                    if (idx < 0) return
-                    const stage = stageRef.current
-                    if (!stage) return
-                    const sr = stage.getBoundingClientRect()
-                    const blk = blocks[idx]
-                    activeBlockElRef.current = blk
-                    const br = blk.getBoundingClientRect()
-                    const ax = (br.left + br.width / 2 - sr.left) / s - paneLeftLocal
-                    const ay = (br.top - sr.top) / s - paneTopLocal
-                    setTreeForIndex(idx)
-                    setTreeAnchor({ x: Math.round(ax), y: Math.round(ay) })
-                    // Keep tree open when switching stacks; compute whether this is a pivot
-                    setTreeOpen((prev) => !prev || treeForIndex !== idx)
-                    // Reset anchors for both fresh open and pivot to avoid stale refs
-                    anchorsRef.current = createAnchorsBucket(4)
-                    // Trigger re-measure/repaint cycle for connectors
-                    setAnchorsVersion((v) => v + 1)
-                  }}
-                >
-                  <Pipeline
-                    className={`${treeOpen ? 'pipeline-shell--tree-open' : ''} ${!pipelinePoweredOn ? 'pipeline-shell--powered-off' : ''}`.trim()}
-                    entries={[
-                      { id: 'b1', descriptor: 'Branding' },
-                      { id: 'b2', descriptor: 'Design' },
-                      { id: 'b3', descriptor: 'Production' },
-                      { id: 'b4', descriptor: 'Marketing' },
-                      { id: 'b5', descriptor: 'Distribution' },
-                    ]}
-                    spacing="roomy"
-                    progressById={pipeProgress}
-                  />
-                </div>
-                {/* right-gap slot will be rendered via portal below */}
-                {/* Task tree overlay anchored above selected block (stage-local coordinates) */}
-                {treeOpen && treeAnchor && (
-                  <div
-                    key={`tree-${treeForIndex}-${_anchorsVersion}`}
-                    style={{
-                      position: 'absolute',
-                      left: treeAnchor.x,
-                      top: treeAnchor.y,
-                      zIndex: 5,
-                      pointerEvents: 'auto',
-                      transform: 'translateZ(0)',
-                      willChange: 'transform',
-                      backfaceVisibility: 'hidden',
-                      overflow: 'visible',
-                    }}
-                  >
-                    <div style={{ position: 'relative', width: 0, height: 0, overflow: 'visible' }}>
-                      {(() => {
-                        const T = taskTreeTransforms({ count: 4, itemHeight: itemH, nodeScale: 1.0, firstGapPx: 50, stackGapPx: 50 })
-                        if (!T.length) return null
-                        return (
-                          <>
-                            {treeForIndex === 0 && showResearch && (() => {
-                              const t0 = T[0]
-                              const base = lockedT0 || t0
-                              const circleSize = 150
-                              const radius = circleSize / 2
-                              const OFFSET_Y = -(40 + radius) // keep bottom of big circle 40px above block top
-                              const OFFSET_X = 0
-                              const BADGE_RADIUS = 22
-                              const BADGE_GAP = 8
-                              const BADGE_OFFSET_Y = - (BADGE_GAP + BADGE_RADIUS) // keep bottom of 44px badge ~8px above block top
-                              const BADGE_Y_NUDGE = -4 // manual correction to counter tiny post-confirm drift
-                              return (
-                            <div
-                              style={{
-                                position: 'absolute',
-                                left: 0,
-                                top: 0,
-                                transform: `translate3d(-50%, -50%, 0) translate3d(${base.tx + OFFSET_X}px, ${OFFSET_Y}px, 0) scale(${base.scale})`,
-                                transformOrigin: 'center center',
-                                zIndex: 3,
-                                opacity: 1,
-                              }}
-                            >
-                              {!(secondPaneCollapsing || secondPaneDone) && (
-                                <Research title="Research" description="Style & Creative Direction" width={150} />
-                              )}
-                              <VibePanel
-                                anchorRect={null as any}
-                                visible={vibeVisible && !secondPaneDone && !secondPaneCollapsing}
-                                usePortal={false}
-                                anchorCircleSize={circleSize}
-                                panelId="first"
-                                badgeText={firstBadge}
-                              />
-                              {(secondPaneCollapsing || secondPaneDone) && (
-                                <div
-                                  aria-label="research-progress-badge"
-                                  style={{
-                                    position: 'absolute',
-                                    left: 0,
-                                    top: 0,
-                                    transform: `translate3d(-50%, -50%, 0) translate3d(0px, ${(BADGE_OFFSET_Y - OFFSET_Y) + BADGE_Y_NUDGE}px, 0) scale(${base.scale})`,
-                                    transformOrigin: 'center center',
-                                    width: 44,
-                                    height: 44,
-                                    borderRadius: 9999,
-                                    background: 'rgba(0,0,0,0.92)',
-                                    boxShadow: '0 8px 24px rgba(0,0,0,0.28)',
-                                    display: 'grid',
-                                    placeItems: 'center',
-                                    color: '#fff',
-                                    fontWeight: 800,
-                                    fontSize: 16,
-                                    lineHeight: 1,
-                                    zIndex: 4,
-                                    pointerEvents: 'none',
-                                  }}
-                                >
-                                  <span>{firstBadge}</span>
-                                </div>
-                              )}
-                              {logoTaskMounted && (
-                                <div
-                                  style={{
-                                    position: 'absolute',
-                                    left: 0,
-                                    top: 0,
-                                    // Align horizontally with center, place above the badge by 16px gap
-                                    transform: `translate3d(-50%, -50%, 0) translate3d(0px, ${((BADGE_OFFSET_Y - OFFSET_Y) + BADGE_Y_NUDGE) - (BADGE_RADIUS + 16 + (132 / 2))}px, 0) scale(${base.scale}) translateY(${logoTaskShown ? 0 : -64}px)`,
-                                    transformOrigin: 'center center',
-                                    opacity: logoTaskShown ? 1 : 0,
-                                    transition: 'transform 380ms ease, opacity 380ms ease',
-                                    zIndex: 5,
-                                  }}
-                                >
-                                  <TaskItem
-                                    text="Logo Generation"
-                                    gap={64}
-                                    tooltipVariant="circle"
-                                    mode="chain"
-                                    variant="unified"
-                                    progressPercent={0}
-                                    chipOnly
-                                    enableSwipeInfo
-                                    labelVisibility="auto"
-                                    infoTitle="Logo Generation"
-                                    infoText="Let's generate the logo for your brand."
-                                  />
-                                </div>
-                              )}
-
-                              {typoTaskMounted && (
-                                <div
-                                  style={{
-                                    position: 'absolute',
-                                    left: 0,
-                                    top: 0,
-                                    // Same anchored placement as first chip, reuse fly-in
-                                    transform: `translate3d(-50%, -50%, 0) translate3d(0px, ${((BADGE_OFFSET_Y - OFFSET_Y) + BADGE_Y_NUDGE) - (BADGE_RADIUS + 16 + (132 / 2))}px, 0) scale(${base.scale}) translateY(${typoTaskShown ? 0 : -64}px)`,
-                                    transformOrigin: 'center center',
-                                    opacity: typoTaskShown ? 1 : 0,
-                                    transition: 'transform 380ms ease, opacity 380ms ease',
-                                    zIndex: 5,
-                                  }}
-                                >
-                                  <TaskItem
-                                    text="Typography & Color"
-                                    gap={64}
-                                    tooltipVariant="circle"
-                                    mode="chain"
-                                    variant="unified"
-                                    progressPercent={0}
-                                    chipOnly
-                                    morphOnOutsource
-                                    enableSwipeInfo
-                                    labelVisibility="auto"
-                                    infoTitle="Typography & Color"
-                                    infoText="Set type styles and color palette for your brand."
-                                  />
-                                </div>
-                              )}
-
-                              {/* Right-side action UI removed; actions now live inside the chip via swipe */}
-
-                              {/* Tooltip overlay explaining the TaskItem */}
-                              {logoTipMounted && (
-                                <div
-                                  style={{
-                                    position: 'absolute',
-                                    left: 0,
-                                    top: 0,
-                                    transform: `translate3d(-50%, -50%, 0) translate3d(0px, ${((BADGE_OFFSET_Y - OFFSET_Y) + BADGE_Y_NUDGE) - (BADGE_RADIUS + 16 + (itemH / 2))}px, 0) scale(${base.scale}) translateY(${(!logoTipEverShown && !logoTipShown) ? -64 : 0}px)`,
-                                    transformOrigin: 'center center',
-                                    opacity: logoTipShown ? 1 : 0,
-                                    transition: 'transform 380ms ease, opacity 380ms ease',
-                                    zIndex: 7,
-                                    pointerEvents: logoTipShown ? 'auto' : 'none',
-                                  }}
-                                >
-                                  <div
-                                    style={{
-                                      padding: '10px 14px',
-                                      borderRadius: 30,
-                                      background: 'linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.35))',
-                                      color: '#fff',
-                                      border: '1px solid rgba(255,255,255,0.14)',
-                                      boxShadow: '0 8px 28px rgba(0,0,0,0.25)',
-                                      WebkitBackdropFilter: 'blur(6px)',
-                                      backdropFilter: 'blur(6px)',
-                                      width: 185,
-                                      height: 240,
-                                      display: 'grid',
-                                      placeItems: 'center',
-                                      placeContent: 'center',
-                                      position: 'relative',
-                                      textAlign: 'center' as const,
-                                    }}
-                                  >
-                                    <button
-                                      aria-label="Close"
-                                      onClick={(e) => { e.stopPropagation(); setLogoTipShown(false); window.setTimeout(() => setLogoTipMounted(false), 420) }}
-                                      style={{
-                                        position: 'absolute',
-                                        top: 10,
-                                        right: 10,
-                                        width: 24,
-                                        height: 24,
-                                        background: 'transparent',
-                                        border: 'none',
-                                        padding: 0,
-                                        display: 'grid',
-                                        placeItems: 'center',
-                                        cursor: 'pointer',
-                                        lineHeight: 0,
-                                      }}
-                                    >
-                                      <svg
-                                        width={16}
-                                        height={16}
-                                        viewBox="0 0 24 24"
-                                        aria-hidden
-                                        focusable="false"
-                                        style={{ display: 'block' }}
-                                      >
-                                        <path d="M6 6l12 12M6 18L18 6" stroke="rgba(255,255,255,0.92)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                      </svg>
-                                    </button>
-                                    <div style={{ fontWeight: 800, fontSize: 16, letterSpacing: 0.3, marginBottom: 5 }}>Task Items</div>
-                                    <div style={{ fontWeight: 500, fontSize: 14, lineHeight: 1.25, color: 'rgba(255,255,255,0.92)' }}>
-                                      A Task Item is the pearl in your pipeline—an asset your project needs, crafted by Ada to a shine. Choose how it’s made: Ada automates, freelancers build, or your team insources.
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          )
-                        })()}
-                        {!TASK_TREE_DECOUPLED && T.length > 0 && (() => {
-                          const items = ['Define sub-goal', 'Research options', 'Design component', 'Draft deliverable']
-                          const showIdxs = [seqIndex, Math.min(seqIndex + 1, T.length - 1)]
-                          return (
-                            <>
-                              {showIdxs.map((ii, k) => {
-                                const t = T[ii]
-                                const isActive = k === 0
-                                return (
-                                <div
-                                  key={`ti-${ii}`}
-                                  style={{
-                                    position: 'absolute',
-                                    left: 0,
-                                    top: 0,
-                                    transform: `translate3d(-50%, -50%, 0) translate3d(${t.tx}px, ${t.ty}px, 0) scale(${t.scale})`,
-                                    transformOrigin: 'center center',
-                                    zIndex: isActive ? 2 : 1,
-                                    opacity: isActive ? 1 : 0.35,
-                                    transition: 'opacity 180ms ease',
-                                  }}
-                                  onClick={isActive ? () => setSeqIndex((v) => Math.min(v + 1, T.length - 1)) : undefined}
-                                >
-                                  <TaskItem
-                                    text={items[ii]}
-                                    gap={64}
-                                    tooltipVariant="circle"
-                                    mode="chain"
-                                    variant="unified"
-                                    progressPercent={0}
-                                    exposeAnchors={(a) => {
-                                      setInstanceAnchors(anchorsRef.current as any, ii, a as any)
-                                      setAnchorsVersion((v) => v + 1)
-                                    }}
-                                  />
-                                </div>
-                              )
-                            })}
-                            </>
-                          )
-                        })()}
-                        {/* Hidden measurer */}
-                        <div ref={measureRef} style={{ position: 'absolute', left: -99999, top: 0, visibility: 'hidden' }}>
-                          <TaskItem text="Measure" gap={64} variant="unified" />
-                        </div>
-                      </>
-                    )
-                  })()}
-                    </div>
-                  </div>
-                )}
-                {/* Spawned Research circle (after vibe collapse) */}
-                {spawnCircle && (
-                  <div style={{ position: 'absolute', left: 0, top: 0, zIndex: 6, pointerEvents: (spawnSelectorVisible || secondPaneCollapsing) ? 'auto' : 'none' }}>
-                    <div ref={spawnRef}
-                      style={{
-                        position: 'absolute',
-                        left: 0,
-                        top: 0,
-                        transform: `translate3d(-50%, -50%, 0) translate3d(${spawnCircle.x}px, ${spawnCircle.y}px, 0) translateY(${spawnCircle.entering ? 0 : -64}px)`,
-                        transition: 'transform 380ms ease, opacity 380ms ease',
-                        opacity: spawnCircle.entering ? 1 : 0,
-                      }}
-                    >
-                      {!(secondPaneCollapsing || secondPaneDone) && (
-                        <Research
-                          title="Research"
-                          description="Name Check"
-                          width={150}
-                          stages={[
-                            'Scouting trends and finding names',
-                            'Checking domains and social handles',
-                            'Flagging conflicts and risk levels',
-                            'Preparing your shortlist',
-                          ]}
-                        />
-                      )}
-                      {/* Inline selector pane for second instance (same format) */}
-                      {(spawnSelectorVisible || secondPaneCollapsing) && (
-                        <VibePanel
-                          anchorRect={null as any}
-                          visible={(spawnSelectorVisible || secondPaneCollapsing) && !secondPaneDone}
-                          usePortal={false}
-                          anchorCircleSize={150}
-                          panelId="second"
-                          spawnOnConfirm={false}
-                          collapseToCircle={true}
-                          collapseGhost={true}
-                          collapseOffsetY={10}
-                          chipItems={[
-                            'Brushline',
-                            'Studio Loom',
-                            'Pigment & Thread',
-                            'Best Fit',
-                          ]}
-                          chipPrefix="Name"
-                        />
-                      )}
-                    </div>
-                  </div>
-                )}
-                <div
-                  ref={visionRef}
-                  style={{
-                    position: 'absolute',
-                    left: (worldPos.vision ? worldPos.vision.x - paneLeftLocal + VISION_OFFSET_X : 8 + VISION_OFFSET_X),
-                    top: (worldPos.vision ? worldPos.vision.y - paneTopLocal + VISION_OFFSET_Y : 24 + 260 + VISION_OFFSET_Y),
-                    transform: `scale(${VISION_BASE_SCALE})`,
-                    transformOrigin: 'top left',
-                    opacity: treeOpen ? 0.5 : 1,
-                    transition: 'opacity 300ms ease',
-                  }}
-                >
-                  <VisionPrimitive state={deriveVisionProps(vision).state} onPowerToggle={(next) => setPipelinePoweredOn(next === 'active')} />
-                </div>
-                {/* Connectors between blocks (stage overlay, clipped with pane) */}
-                <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 4 }}>
-                  {pipePairs.map((pair, i) => {
-                    const stage = stageRef.current
-                    if (!stage || !pair.a || !pair.b) return null
-                    const sr = stage.getBoundingClientRect()
-                    const ar = pair.a.getBoundingClientRect()
-                    const br = pair.b.getBoundingClientRect()
-                    const from = { x: (ar.right - sr.left) / s - paneLeftLocal, y: (ar.top + ar.height / 2 - sr.top) / s - paneTopLocal }
-                    const to   = { x: (br.left - sr.left)  / s - paneLeftLocal, y: (br.top + br.height / 2 - sr.top) / s - paneTopLocal }
-                    return (
-                      <Connector
-                        key={`pconn-${i}`}
-                        from={from}
-                        to={to}
-                        radius={18}
-                        width={1.4}
-                        dashArray="2 5"
-                        overlay="stage"
-                        color="rgba(255,255,255,0.9)"
-                        flow="forward"
-                        svgStyle={{ ['--conn-dash-period' as any]: '7px', opacity: pipelinePoweredOn ? (treeOpen ? 0.5 : 1) : 0, transition: 'opacity 300ms ease' }}
-                      />
-                    )
-                  })}
-                  {/* Stage-level bitmap div removed; canvas handles the spine now. */}
-                  {/* Stage-level spine removed; using overlay-local rods to avoid cross-space re-sampling. */}
-                  
-                  {(() => {
-                    const stage = stageRef.current
-                    const p = pipelineRef.current
-                    const v = visionRef.current
-                    if (!stage || !p || !v) return null
-                    const sr = stage.getBoundingClientRect()
-                    const pr = p.getBoundingClientRect()
-                    const vr = v.getBoundingClientRect()
-                    const from = { x: (vr.left + vr.width / 2 - sr.left) / s - paneLeftLocal, y: (vr.top - sr.top) / s - paneTopLocal }
-                    const to   = { x: (pr.left - sr.left) / s - paneLeftLocal, y: (pr.top + pr.height / 2 - sr.top) / s - paneTopLocal }
-                    const visOpacity = pipelinePoweredOn ? (treeOpen ? 0.5 : 1) : 0
-                    return (
-                      <Connector
-                        key="pconn-vision"
-                        from={from}
-                        to={to}
-                        radius={24}
-                        width={2.5}
-                        dashArray="3 9"
-                        overlay="stage"
-                        color="rgba(255,255,255,0.9)"
-                        fromAxis="vertical"
-                        toAxis="horizontal"
-                        svgStyle={{ opacity: visOpacity, transition: 'opacity 300ms ease' }}
-                      />
-                    )
-                  })()}
-                  {/* Spine removed per request. Node-based connectors only. */}
-                </div>
-              </div>
-              {children}
+            <div ref={stageRef} style={{ position: 'relative', width: stageWLocal, height: stageHLocal }}>
+              <OverlayStage
+                stageRef={stageRef}
+                paneContainerRef={paneContainerRef}
+                pipelineRef={pipelineRef}
+                visionRef={visionRef}
+                anchorsRef={anchorsRef}
+                worldPos={worldPos}
+                s={s}
+                paneLeftLocal={paneLeftLocal}
+                paneTopLocal={paneTopLocal}
+                compPaneWLocal={compPaneWLocal}
+                compPaneHLocal={compPaneHLocal}
+                PIPELINE_SCALE={PIPELINE_SCALE}
+                pipeProgress={pipeProgress}
+                pipePairs={pipePairs}
+                pipelinePoweredOn={pipelinePoweredOn}
+                setPipelinePoweredOn={(on) => setPipelinePoweredOn(on)}
+                enabledBlocks={enabledBlocks}
+                treeOpen={treeOpen}
+                treeForIndex={treeForIndex}
+                treeAnchor={treeAnchor || { x: 0, y: 0 }}
+                anchorsVersion={_anchorsVersion}
+                itemH={itemH}
+                lockedT0={lockedT0}
+                seqIndex={seqIndex}
+                setSeqIndex={setSeqIndex}
+                showResearch={showResearch}
+                vibeVisible={vibeVisible}
+                firstBadge={firstBadge}
+                logoTaskMounted={logoTaskMounted}
+                logoTaskShown={logoTaskShown}
+                typoTaskMounted={typoTaskMounted}
+                typoTaskShown={typoTaskShown}
+                logoTipMounted={logoTipMounted}
+                logoTipShown={logoTipShown}
+                logoTipEverShown={logoTipEverShown}
+                onCloseLogoTip={() => { setLogoTipShown(false); window.setTimeout(() => setLogoTipMounted(false), 420) }}
+                onExposeAnchors={(ii, a) => { setInstanceAnchors(anchorsRef.current as any, ii, a as any); setAnchorsVersion((v) => v + 1) }}
+                measureRef={measureRef}
+                setTreeOpen={setTreeOpen}
+                setTreeForIndex={setTreeForIndex}
+                setTreeAnchor={(pos) => setTreeAnchor(pos)}
+                setAnchorsVersion={setAnchorsVersion}
+                activeBlockElRef={activeBlockElRef}
+                TASK_TREE_DECOUPLED={TASK_TREE_DECOUPLED}
+                spawnCircle={spawnCircle}
+                spawnRef={spawnRef}
+                spawnSelectorVisible={spawnSelectorVisible}
+                secondPaneCollapsing={secondPaneCollapsing}
+                secondPaneDone={secondPaneDone}
+                VISION_OFFSET_X={VISION_OFFSET_X}
+                VISION_OFFSET_Y={VISION_OFFSET_Y}
+                VISION_BASE_SCALE={VISION_BASE_SCALE}
+                vision={vision}
+              >
+                {children}
+              </OverlayStage>
             </div>
-        </SandboxViewport>
+          </SandboxViewport>
         
         {/* Localized zoom control inside the pane clip (topmost, small hitbox) */}
         <div style={{ position: 'absolute', right: 18, top: '50%', transform: 'translateY(-50%)', zIndex: 5 }}>
@@ -1107,6 +773,9 @@ const CanvasSpace = React.forwardRef(function CanvasSpace(
                       ]}
                       spacing="roomy"
                       progressById={pipeProgress}
+                      enabledIds={enabledBlocks}
+                      animatingIds={animatingBlocks}
+                      canvasTransform={view}
                     />
                   </div>
                   <div style={{ position: 'absolute', right: 48, bottom: 36, transform: `scale(${VISION_BASE_SCALE})`, transformOrigin: 'top left', opacity: treeOpen ? 0.5 : 1, transition: 'opacity 300ms ease' }}>
@@ -1175,137 +844,6 @@ const CanvasSpace = React.forwardRef(function CanvasSpace(
 
       {/* Portal: render the right-gap slot moved into TaskPane */}
       <TaskPane open={instancePaneOpen} CANVAS_FRAME_GAP={CANVAS_FRAME_GAP} SIDE_PANE_RESERVED={SIDE_PANE_RESERVED} SIDE_PANE_WIDTH={SIDE_PANE_WIDTH} SIDE_PANE_V_INSET={SIDE_PANE_V_INSET} SLOT_CENTER_BIAS_X={SLOT_CENTER_BIAS_X} />
-      {false && createPortal(
-        <div aria-label="right-gap-slot" style={{ position: 'fixed', top: 0, right: CANVAS_FRAME_GAP, width: SIDE_PANE_RESERVED, height: '100vh', pointerEvents: 'none', overflow: 'hidden', zIndex: 6 }}>
-          <div aria-label="right-gap-pane" style={{ position: 'absolute', top: SIDE_PANE_V_INSET, left: '50%', width: SIDE_PANE_WIDTH, height: `calc(100vh - ${SIDE_PANE_V_INSET * 2}px)`, transform: instancePaneOpen ? `translateX(calc(-50% + ${SLOT_CENTER_BIAS_X}px))` : `translateX(calc(-50% + ${SLOT_CENTER_BIAS_X + SIDE_PANE_RESERVED}px))`, pointerEvents: instancePaneOpen ? 'auto' : 'none', transition: 'transform 260ms ease', willChange: 'transform' }}>
-            <div style={{ position: 'absolute', inset: 0, borderRadius: 18, border: '1px solid rgba(255,255,255,0.42)', background: 'rgba(255,255,255,0.14)', backdropFilter: 'blur(28px) saturate(1.1)', WebkitBackdropFilter: 'blur(28px) saturate(1.1)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.16)', pointerEvents: 'none' }} />
-            <div
-              style={{ position: 'absolute', inset: 0, padding: '16px 14px 18px 14px', display: 'grid', gridTemplateRows: 'auto 1fr auto', gap: 8, touchAction: 'none' as any }}
-              onPointerDownCapture={(e) => {
-                paneSwipeStartRef.current = { x: e.clientX, y: e.clientY }
-                paneSwipeDidSwipeRef.current = false
-                setPaneDragging(false)
-                setPaneDragDX(0)
-                try { (e.currentTarget as any).setPointerCapture?.(e.pointerId) } catch {}
-              }}
-              onPointerMoveCapture={(e) => {
-                const s = paneSwipeStartRef.current
-                if (!s) return
-                const dx = e.clientX - s.x
-                const dy = e.clientY - s.y
-                const horiz = Math.abs(dx) > 8 && Math.abs(Math.abs(dx) - Math.abs(dy)) > 2
-                if (!paneDragging && horiz) setPaneDragging(true)
-                if (paneDragging || horiz) {
-                  let adj = dx
-                  // edge friction when pulling past ends
-                  if ((panePage === 0 && dx > 0) || (panePage === 1 && dx < 0)) adj = dx * 0.35
-                  const W = paneContentW || (e.currentTarget as HTMLElement).clientWidth
-                  const lim = Math.max(120, Math.min(800, W))
-                  if (adj >  lim) adj =  lim
-                  if (adj < -lim) adj = -lim
-                  setPaneDragDX(adj)
-                  paneSwipeDidSwipeRef.current = true
-                  e.preventDefault()
-                }
-              }}
-              onPointerUpCapture={(e) => {
-                const s = paneSwipeStartRef.current
-                try { (e.currentTarget as any).releasePointerCapture?.(e.pointerId) } catch {}
-                paneSwipeStartRef.current = null
-                const didDrag = paneDragging
-                const dx = didDrag && s ? (e.clientX - s.x) : 0
-                const W = paneContentW || (e.currentTarget as HTMLElement).clientWidth
-                const TH = Math.max(50, Math.min(240, Math.round(W * 0.22)))
-                if (didDrag) {
-                  if (dx <= -TH && panePage < 1) setPanePage(1)
-                  else if (dx >= TH && panePage > 0) setPanePage(0)
-                  // snap back animation
-                  setPaneDragging(false)
-                  setPaneDragDX(0)
-                  window.setTimeout(() => { paneSwipeDidSwipeRef.current = false }, 220)
-                } else if (s) {
-                  // tap without drag
-                  paneSwipeDidSwipeRef.current = false
-                }
-              }}
-              onPointerCancelCapture={() => { paneSwipeStartRef.current = null; setPaneDragging(false); setPaneDragDX(0); paneSwipeDidSwipeRef.current = false }}
-              onClickCapture={(e) => { if (paneSwipeDidSwipeRef.current || paneDragging) { e.preventDefault(); e.stopPropagation(); paneSwipeDidSwipeRef.current = false } }}
-            >
-              <div style={{ position: 'relative', height: 0 }} />
-              <div ref={paneContentRef} style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
-                <div
-                  style={{
-                    position: 'absolute', inset: 0,
-                    display: 'flex', flexDirection: 'row', alignItems: 'stretch',
-                    width: '200%',
-                    transform: `translate3d(${(-panePage * (paneContentW || 0)) + (paneDragging ? paneDragDX : 0)}px,0,0)`,
-                    transition: paneDragging ? 'none' : 'transform 280ms ease',
-                    willChange: 'transform'
-                  }}
-                >
-                  {/* Slide 1: Instances */}
-                  <div style={{ flex: '0 0 50%', width: '50%', position: 'relative' }}>
-                    <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', color: 'rgba(255,255,255,0.9)', fontWeight: 600 }}>
-                      <div style={{ opacity: 0.85 }}>Instances — Page 1</div>
-                    </div>
-                  </div>
-                  {/* Slide 2: Payment */}
-                  <div style={{ flex: '0 0 50%', width: '50%', position: 'relative' }}>
-                    <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', padding: 0 }}>
-                      {/* Shadow wrapper holds outer drop-shadow so inner card can keep overflow:hidden */}
-                      <div style={{ width: '90%', maxWidth: 280, height: 160, borderRadius: 22, filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.14)) drop-shadow(0 16px 40px rgba(0,0,0,0.18))', willChange: 'filter' }}>
-                        <div style={{ width: '100%', height: '100%', borderRadius: 22, position: 'relative',
-                          // TaskItem-style glass fill + rim
-                          border: '1px solid rgba(255,255,255,0.42)',
-                          background: 'linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.06))',
-                          boxShadow: 'inset 1px 1px 2px rgba(255,255,255,0.85), inset -3px -3px 8px rgba(0,0,0,0.10)',
-                          backdropFilter: 'blur(28px) saturate(1.05)', WebkitBackdropFilter: 'blur(28px) saturate(1.05)',
-                          overflow: 'hidden', contain: 'paint', transform: 'translateZ(0)', backfaceVisibility: 'hidden', isolation: 'isolate'
-                        }}>
-                        <div style={{ position: 'absolute', inset: 0, borderRadius: 22, background: 'radial-gradient(140px 120px at 20% 10%, rgba(255,255,255,0.08), transparent 60%)', pointerEvents: 'none' }} />
-                        <div style={{ position: 'absolute', top: 12, right: 12, width: 42, height: 32, opacity: 1 }}>
-                          <svg width="42" height="32" viewBox="0 0 42 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden style={{ position: 'absolute', left: 0, top: 0, filter: 'drop-shadow(0 0 2px rgba(255,255,255,0.18))' }}>
-                            <path fillRule="evenodd" clipRule="evenodd" d="M0 12C0 5.37259 5.37258 0 12 0H30C36.6274 0 42 5.37258 42 12V19.8222C42 26.4496 36.6274 31.8222 30 31.8222H12C5.37258 31.8222 0 26.4496 0 19.8222V12ZM2.05447 10.9389C2.57926 5.90956 6.83177 1.98889 12 1.98889H20V12.9278H22V1.98889H30C35.1682 1.98889 39.4207 5.90956 39.9455 10.9389H32.01L28.9966 6.96224L27.3993 8.15919L31 12.9109V12.9278H40V18.8944H31V18.9091L27.3993 23.6608L28.9966 24.8577L32.0082 20.8833H39.9455C39.4207 25.9127 35.1682 29.8333 30 29.8333H22V18.8944H20V29.8333H12C6.83177 29.8333 2.57925 25.9127 2.05447 20.8833H9.99857L13.0102 24.8577L14.6075 23.6608L11 18.9001V18.8944H2V12.9278H11V12.9199L14.6075 8.15919L13.0102 6.96224L9.99686 10.9389H2.05447Z" fill="#FFFFFF" fill-opacity="0.60"/>
-                          </svg>
-                        </div>
-                        <div style={{ position: 'absolute', top: 22, left: '50%', transform: 'translateX(-50%)', color: 'rgba(255,255,255,0.86)', fontWeight: 600, letterSpacing: 2.2, fontSize: 11 }}>EDEN</div>
-                        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -42%)', display: 'flex', alignItems: 'center', gap: 12 }}>
-                          <div style={{ width: 8, height: 8, borderRadius: 999, background: 'rgba(255,255,255,0.96)' }} />
-                          <div style={{ color: 'rgba(255,255,255,0.96)', fontWeight: 600, fontSize: 44, letterSpacing: 1.5, fontVariantNumeric: 'tabular-nums lining-nums' }}>8123</div>
-                        </div>
-                        <div style={{ position: 'absolute', right: 16, bottom: 12, color: 'rgba(255,255,255,0.92)', fontWeight: 500, fontSize: 14, letterSpacing: 1 }}>01/22</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div style={{ position: 'relative', height: 0 }} />
-              <div aria-label="pane-dots" style={{ position: 'absolute', bottom: 8, left: '50%', transform: 'translateX(-50%)', display: 'grid', gridAutoFlow: 'column', gap: 6 }}>
-                {[0,1].map((i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); setPanePage(i) }}
-                    aria-label={`Go to page ${i+1}`}
-                    style={{
-                      width: 6,
-                      height: 6,
-                      borderRadius: 999,
-                      border: 'none',
-                      padding: 0,
-                      background: (panePage === i) ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.35)',
-                      boxShadow: (panePage === i) ? '0 0 4px rgba(255,255,255,0.45)' : 'none',
-                      cursor: 'pointer'
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-        </div>,
-        document.body
-      )}
 
       {/* Overlays */}
       {showGrid && <GridOverlay />}
@@ -1324,6 +862,12 @@ const CanvasSpace = React.forwardRef(function CanvasSpace(
 
       {/* Debug */}
       <div className="vision-harness__debug" style={{ right: 16, left: 'auto', top: 56 }}>x: {Math.round(view.pan.x)} | y: {Math.round(view.pan.y)}</div>
+
+      {/* Debug Menu */}
+      <DebugMenu
+        onCompleteTaskBlock={handleCompleteTaskBlock}
+        onCompleteBrandingSection={handleCompleteBrandingSection}
+      />
 
     </div>
   )
